@@ -1,0 +1,78 @@
+// Products in Infant Formulas category
+export const infantFormulas = [
+    {
+      id: 34,
+      name: "Nan 1",
+      size: "-",
+      price: 11000,
+      originalPrice: 12000,
+      category: "Infant Formulas",
+      discount: 8,
+      image: "/placeholder.svg",
+      rating: 4.8,
+      reviews: 95,
+      isNew: false,
+      inStock: true,
+      description: "Premium infant formula for babies from 0-6 months."
+    },
+    {
+      id: 35,
+      name: "Nan 2",
+      size: "-",
+      price: 11000,
+      originalPrice: 12000,
+      category: "Infant Formulas",
+      discount: 8,
+      image: "/placeholder.svg",
+      rating: 4.7,
+      reviews: 90,
+      isNew: false,
+      inStock: true,
+      description: "Premium follow-up formula for babies from 6-12 months."
+    },
+    {
+      id: 36,
+      name: "Nan 3",
+      size: "-",
+      price: 11000,
+      originalPrice: 12000,
+      category: "Infant Formulas",
+      discount: 8,
+      image: "/placeholder.svg",
+      rating: 4.7,
+      reviews: 85,
+      isNew: false,
+      inStock: true,
+      description: "Premium growing-up formula for toddlers from 1-3 years."
+    },
+    {
+      id: 37,
+      name: "My Boy",
+      size: "-",
+      price: 7000,
+      originalPrice: 7500,
+      category: "Infant Formulas",
+      discount: 7,
+      image: "/placeholder.svg",
+      rating: 4.5,
+      reviews: 75,
+      isNew: false,
+      inStock: true,
+      description: "Nutritious formula for growing children."
+    },
+    {
+      id: 38,
+      name: "Complan Milk",
+      size: "450g",
+      price: 8000,
+      originalPrice: 8500,
+      category: "Infant Formulas",
+      discount: 6,
+      image: "/placeholder.svg",
+      rating: 4.6,
+      reviews: 80,
+      isNew: true,
+      inStock: true,
+      description: "Complete planned nutrition for growing children."
+    }
+  ];
