@@ -3,10 +3,13 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ProductCard from '../components/ProductCard';
 import { products, getAllCategoriesValue as getAllCategories } from '../data/products';
+import useProducts from '@/hooks/useProducts';
 
 const Products = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortOption, setSortOption] = useState('default');
+  const { products, isLoading, isError } = useProducts();
+
   
   const categories = ['All', ...getAllCategories()];
   

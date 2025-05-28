@@ -1,25 +1,47 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { searchProductsValue } from '@/data/products/products';
+import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { useCart } from '@/contexts/CartContext';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const query = searchParams.get('q') || '';
-  const results = searchProductsValue(query);
   const { addToCart } = useCart();
 
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchSearchResults = async () => {
+      if (!query || query.trim().length < 3) return;
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/products?q=${encodeURIComponent(query.trim())}`);
+        const data = await res.json();
+        setResults(data?.products || []);
+      } catch (error) {
+        console.error('Error fetching search results:', error);
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSearchResults();
+  }, [query]);
+
   return (
-    
     <div className="p-6">
-        <div>
-            <Navbar/>   
-        </div>
+      <Navbar />
+
       <h1 className="text-2xl font-bold mb-4">Search results for "{query}"</h1>
-      {results.length === 0 ? (
-        <p>No products found.</p>
+
+      {loading ? (
+        <p className="text-gray-500">Loading...</p>
+      ) : results.length === 0 ? (
+        <p className="text-gray-500">No products found.</p>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {results.map((product, index) => (
@@ -33,9 +55,9 @@ export default function SearchPage() {
 
               {/* Product Image */}
               <div className="h-48 overflow-hidden">
-                <img 
-                  src={product.image} 
-                  alt={product.name}
+                <img
+                  src={product.image || '/placeholder.png'}
+                  alt={product.name || 'Product'}
                   className="w-full h-full object-cover transition-transform hover:scale-110"
                 />
               </div>
@@ -46,7 +68,9 @@ export default function SearchPage() {
                 <p className="text-gray-500 text-sm mb-2">{product.category}</p>
 
                 <div className="flex items-center mb-3">
-                  <span className="text-lg font-bold text-gray-800">&#8358;{product.price.toFixed(2)}</span>
+                  <span className="text-lg font-bold text-gray-800">
+                    &#8358;{(product.price || 0).toFixed(2)}
+                  </span>
                   {product.originalPrice > 0 && (
                     <span className="text-sm text-gray-500 line-through ml-2">
                       &#8358;{product.originalPrice.toFixed(2)}
@@ -55,12 +79,11 @@ export default function SearchPage() {
                 </div>
 
                 <button
-          onClick={() => addToCart({ ...product, quantity: 1 })} // ✅ Add to cart
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex items-center justify-center"
-        >
-          {/* SVG icon and text */}
-          Add to Cart
-        </button>
+                  onClick={() => addToCart({ ...product, quantity: 1 })}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex items-center justify-center"
+                >
+                  Add to Cart
+                </button>
               </div>
             </div>
           ))}

@@ -1,10 +1,20 @@
 import mongoose from 'mongoose';
 
-const UserSchema = new mongoose.Schema({
-  name: { type: String },
-  email: { type: String, required: true, unique: true },
-  password: { type: String },
-  role: { type: String, default: 'user' },
+const userSchema = new mongoose.Schema({
+  firstName: { type: String, required: true },
+  lastName:  { type: String, required: true },
+  email:     { type: String, required: true, unique: true },
+  password:  { type: String, required: true },
+  isAdmin: { type: Boolean, default: false }, // ✅ Add this
+  referralCode: { type: String, unique: true },
+  usedReferralCode: { type: String, default: null }, // Stores the code they used (if any)
+
+
+
+}, {
+  timestamps: true
 });
 
-export default mongoose.models.User || mongoose.model('User', UserSchema);
+// Prevent model overwrite on hot reload
+const User = mongoose.models.User || mongoose.model('User', userSchema);
+export default User;

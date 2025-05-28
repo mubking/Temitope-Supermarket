@@ -1,47 +1,45 @@
+import { createContext, useContext, useState, useCallback } from "react";
+import Toast from "@/components/Toast";
 
-"use client"
-import { createContext, useState, useContext } from 'react';
-// import Toast from '../components/Toast';
-// import Toast from '../Toast';
-
-import Toast from '@/components/Toast';
 const ToastContext = createContext();
-
-export const useToast = () => {
-  const context = useContext(ToastContext);
-  if (!context) {
-    throw new Error('useToast must be used within a ToastProvider');
-  }
-  return context;
-};
 
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
-  const showToast = (message, type = 'info', duration = 3000) => {
+  const showToast = useCallback(({ title, description = "", status = "info", duration = 3000 }) => {
     const id = Date.now();
-    setToasts(prevToasts => [...prevToasts, { id, message, type, duration }]);
-    return id;
-  };
-
-  const hideToast = (id) => {
-    setToasts(prevToasts => prevToasts.filter(toast => toast.id !== id));
-  };
+    setToasts((prevToasts) => [
+      ...prevToasts,
+      {
+        id,
+        title,
+        description,
+        status,
+        duration,
+        onClose: () => {
+          setToasts((prev) => prev.filter((t) => t.id !== id));
+        },
+      },
+    ]);
+  }, []);
 
   return (
     <ToastContext.Provider value={{ showToast }}>
-      {children}
-      <div className="toast-container">
-        {toasts.map(toast => (
+<div className="fixed top-4 right-4 w-full max-w-lg pr-4 md:pr-0 space-y-2 z-50">
+        {toasts.map(({ id, title, description, status, duration, onClose }) => (
           <Toast
-            key={toast.id}
-            message={toast.message}
-            type={toast.type}
-            duration={toast.duration}
-            onClose={() => hideToast(toast.id)}
+            key={id}
+            title={title}
+            description={description}
+            status={status}
+            duration={duration}
+            onClose={onClose}
           />
         ))}
       </div>
+      {children}
     </ToastContext.Provider>
   );
 };
+
+export const useToast = () => useContext(ToastContext);

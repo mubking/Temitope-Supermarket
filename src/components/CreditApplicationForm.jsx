@@ -1,10 +1,15 @@
 "use client"
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '../contexts/ToastContext';
+import { useSession } from 'next-auth/react';
+
 
 const CreditApplicationForm = () => {
   const { showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isIDVerified, setIsIDVerified] = useState(false);
+const [verifying, setVerifying] = useState(false);
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -29,22 +34,116 @@ const CreditApplicationForm = () => {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (!formData.agreeToTerms) {
-      showToast('Please agree to the terms and conditions', 'error');
-      return;
+const { data: session } = useSession();
+
+useEffect(() => {
+  if (session?.user?.email) {
+    setFormData((prev) => ({ ...prev, email: session.user.email }));
+  }
+}, [session]);
+
+
+
+useEffect(() => {
+  const verifyID = async () => {
+    setVerifying(true);
+    setIsIDVerified(false);
+
+    try {
+      const res = await fetch("/api/mock-verify-id", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idType: formData.idType,
+          idNumber: formData.idNumber,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.verified) {
+        showToast("✅ ID verified successfully!", "success");
+        setFormData((prev) => ({
+          ...prev,
+          firstName: data.data.firstName,
+          lastName: data.data.lastName,
+        }));
+        setIsIDVerified(true);
+      } else {
+        setIsIDVerified(false);
+      }
+    } catch (err) {
+      console.error("Verification error:", err);
+      setIsIDVerified(false);
+    } finally {
+      setVerifying(false);
     }
-    
-    setIsSubmitting(true);
-    
-    // Simulate form submission
-    setTimeout(() => {
-      showToast('Your credit application has been submitted successfully!', 'success');
-      setIsSubmitting(false);
-    }, 1500);
   };
+
+  if (formData.idNumber.length >= 10 && formData.idType) {
+    verifyID();
+  } else {
+    setIsIDVerified(false);
+  }
+}, [formData.idNumber, formData.idType]);
+
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!formData.agreeToTerms) {
+    showToast('Please agree to the terms and conditions', 'error');
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    const res = await fetch("/api/credit-application", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
+
+    if (res.ok) {
+showToast("🎉 Application submitted successfully! Your request is under review...", "success");
+
+// Optional: remove toast after 60 seconds
+setTimeout(() => {
+  showToast("⏳ Please wait while our team reviews your application...", "info");
+}, 60000);
+
+      // Reset form after successful submission
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        address: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        employmentStatus: '',
+        monthlyIncome: '',
+        idType: '',
+        idNumber: '',
+        agreeToTerms: false,
+      });
+    } else {
+      const errorMsg = await res.text();
+      showToast(`Failed to submit application: ${errorMsg}`, "error");
+    }
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    showToast("Something went wrong. Please try again later.", "error");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
@@ -272,6 +371,18 @@ const CreditApplicationForm = () => {
                 required
               />
             </div>
+           {verifying && <p className="text-yellow-500 text-sm">Verifying ID...</p>}
+
+{isIDVerified && (
+  <p className="text-green-600 text-sm">
+    Verified: {formData.firstName} {formData.lastName}
+  </p>
+)}
+
+{!verifying && !isIDVerified && formData.idNumber.length >= 10 && (
+  <p className="text-red-600 text-sm">Unable to verify ID</p>
+)}
+
           </div>
         </div>
         
@@ -291,13 +402,16 @@ const CreditApplicationForm = () => {
           </label>
         </div>
         
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className={`w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-md ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
-        >
-          {isSubmitting ? 'Submitting Application...' : 'Submit Application'}
-        </button>
+      <button
+  type="submit"
+  disabled={isSubmitting || !isIDVerified}
+  className={`w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-md ${
+    isSubmitting || !isIDVerified ? 'opacity-70 cursor-not-allowed' : ''
+  }`}
+>
+  {isSubmitting ? 'Submitting Application...' : 'Submit Application'}
+</button>
+
       </form>
     </div>
   );

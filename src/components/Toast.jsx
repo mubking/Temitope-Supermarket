@@ -1,42 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from "react";
 
-const Toast = ({ message, type = 'info', duration = 3000, onClose }) => {
-  const [isVisible, setIsVisible] = useState(true);
-
+const Toast = ({ title, description, status = "info", duration = 3000, onClose }) => {
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-      if (onClose) onClose();
-    }, duration);
-
+    const timer = setTimeout(onClose, duration);
     return () => clearTimeout(timer);
   }, [duration, onClose]);
 
-  if (!isVisible) return null;
-
-  const baseClasses = "fixed bottom-4 right-4 p-4 rounded shadow-lg z-50 transition-opacity";
-  
-  const typeClasses = {
-    info: "bg-blue-500 text-white",
-    success: "bg-green-500 text-white",
-    warning: "bg-yellow-500 text-white",
-    error: "bg-red-500 text-white",
+  const bgColors = {
+    success: "bg-green-100 border-green-500 text-green-700",
+    error: "bg-red-100 border-red-500 text-red-700",
+    info: "bg-blue-100 border-blue-500 text-blue-700",
+    warning: "bg-yellow-100 border-yellow-500 text-yellow-700",
   };
 
+  const color = bgColors[status] || bgColors.info;
+
   return (
-    <div className={`${baseClasses} ${typeClasses[type] || typeClasses.info}`}>
-      <div className="flex items-center justify-between">
-        <p>{message}</p>
-        <button
-          className="ml-4 text-white hover:text-gray-200"
-          onClick={() => {
-            setIsVisible(false);
-            if (onClose) onClose();
-          }}
-        >
-          ×
-        </button>
-      </div>
+   <div
+  data-aos="fade-left"
+  data-aos-duration="400"
+  className={`border-l-4 p-4 rounded shadow-md w-full max-w-sm md:max-w-md lg:max-w-lg ${color}`}
+>
+
+      <p className="font-bold">{title}</p>
+      {description && <p className="text-sm">{description}</p>}
     </div>
   );
 };

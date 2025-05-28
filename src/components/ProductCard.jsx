@@ -3,13 +3,15 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
+
 const ProductCard = ({ product }) => {
   const [isWishlist, setIsWishlist] = useState(false);
-  const { cart, addToCart } = useCart(); 
+  const { cart, addToCart } = useCart();
 
   useEffect(() => {
     const storedWishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
-    setIsWishlist(storedWishlist.includes(product.id));
+    setIsWishlist(storedWishlist.includes(product._id));
+
   }, [product.id]);
 
   const handleWishlist = () => {
@@ -73,42 +75,44 @@ const ProductCard = ({ product }) => {
         <p className="text-gray-500 text-sm mb-2">{product.category}</p>
 
         <div className="flex items-center mb-3">
-          <span className="text-lg font-bold text-gray-800">&#8358;{product.price.toFixed(2)}</span>
-          {product.originalPrice > 0 && (
+          <span className="text-lg font-bold text-gray-800">
+            ₦{typeof product.price === "number" ? product.price.toFixed(2) : "0.00"}
+          </span>
+          {typeof product.originalPrice === "number" && product.originalPrice > 0 && (
             <span className="text-sm text-gray-500 line-through ml-2">
-              &#8358;{product.originalPrice.toFixed(2)}
+              ₦{product.originalPrice.toFixed(2)}
             </span>
           )}
         </div>
 
         <button
-  onClick={() =>
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image, // image URL only
-    })
-  }
-  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex items-center justify-center cursor-pointer"
->
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-5 w-5 mr-2"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-    />
-  </svg>
-  Add to Cart
-</button>
+          onClick={() =>
+            addToCart({
+              id: product._id,
 
+              name: product.name,
+              price: product.price,
+              image: product.image,
+            })
+          }
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex items-center justify-center cursor-pointer"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 mr-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+            />
+          </svg>
+          Add to Cart
+        </button>
       </div>
     </div>
   );

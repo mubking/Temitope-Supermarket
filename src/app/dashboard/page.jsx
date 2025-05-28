@@ -1,0 +1,214 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { FaPhoneAlt } from "react-icons/fa";
+import { FaCartArrowDown, FaUser, FaLocationDot } from "react-icons/fa6";
+import { TbLogout2 } from "react-icons/tb";
+import { BsFillCreditCardFill } from "react-icons/bs";
+
+import Footer from "@/components/Footer";
+import SpecialOfferBanner from "@/components/SpecialOfferBanner";
+import HeroSection from "@/components/HeroSection";
+import CategorySection from "@/components/CategorySection";
+import FeaturedProducts from "@/components/FeaturedProducts";
+import DashboardNavbar from "@/components/DashboardNavbar";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
+
+export default function DashboardPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState("orders");
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  if (status === "loading") {
+    if (!session) {
+      return redirect("/login");
+    }
+
+    // If not admin, redirect to home (or user dashboard)
+    if (session.user.role !== "admin") {
+      return redirect("/");
+    }
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-12 h-12 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
+          <p className="text-lg font-medium text-gray-600">
+            Loading, please wait...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {/* Special Offer Banner */}
+      <SpecialOfferBanner />
+      <DashboardNavbar />
+
+      <main className="flex-grow">
+        {/* User-specific Dashboard Content */}
+        <section className="bg-white py-8 border-b">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+                  Welcome, {session.user.firstName} {session.user.lastName}!
+                </h1>
+                <div className="flex items-center gap-2">
+                  <div className="text-sm text-gray-600">Your coupon code:</div>
+                  <span className="inline-block bg-gray-50 border border-green-200 text-green-700 font-mono rounded-full px-3 py-1 text-xs font-semibold">
+                    TMT12345
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Main Dashboard */}
+        <section className="py-8 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              {/* Promo Banner */}
+              <div className="mb-8 bg-gradient-to-r from-gray-900 to-gray-800 text-white overflow-hidden rounded-lg border shadow-sm">
+                <div className="p-6">
+                  <h3 className="text-lg font-medium mb-2">
+                    Share your coupon code with family, friends & foes to earn
+                    commission
+                  </h3>
+                  <p className="text-gray-300 text-sm">
+                    They will enjoy a one-time discount on their purchase on{" "}
+                    <span className="text-green-400 font-semibold">
+                      Temitope
+                    </span>
+                    .
+                  </p>
+                  <div className="mt-4">
+                    <Link
+                      href="#"
+                      className="text-sm text-green-400 hover:text-green-300 underline"
+                    >
+                      Get your shareable coupon code link
+                    </Link>
+                    <p>
+                      Your Referral Code:{" "}
+                      <strong className="text-white">
+                        {session?.user?.referralCode || "Not available"}
+                      </strong>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dashboard Navigation */}
+              <div className="mb-8 rounded-lg border bg-white shadow-sm">
+                <div className="p-6">
+                  <h3 className="text-2xl font-semibold leading-none tracking-tight mb-4">
+                    My Dashboard
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4">
+                    <Link href="/dashboard/orders">
+                      <button
+                        className={`flex flex-col items-center p-4 rounded-lg transition ${
+                          pathname === "/dashboard/orders"
+                            ? "bg-green-50 text-green-700"
+                            : "hover:bg-gray-100"
+                        }`}
+                      >
+                        <FaCartArrowDown className="h-5 w-5 mb-1" />
+                        <span className="text-sm">My Orders History</span>
+                      </button>
+                    </Link>
+                    <button
+                      onClick={() => setActiveTab("account")}
+                      className={`flex flex-col items-center p-4 rounded-lg transition ${
+                        activeTab === "account"
+                          ? "bg-green-50 text-green-700"
+                          : "hover:bg-gray-100"
+                      }`}
+                    >
+                      <FaUser className="h-5 w-5 mb-1" />
+                      <span className="text-sm">Account Details</span>
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("shipping")}
+                      className={`flex flex-col items-center p-4 rounded-lg transition ${
+                        activeTab === "shipping"
+                          ? "bg-green-50 text-green-700"
+                          : "hover:bg-gray-100"
+                      }`}
+                    >
+                      <FaLocationDot className="h-5 w-5 mb-1" />
+                      <span className="text-sm">Shipping Info</span>
+                    </button>
+                     <Link href="/credit-application">
+      <button
+        className={`flex flex-col items-center p-4 rounded-lg transition ${
+          pathname === "/credit-application"
+            ? "bg-green-50 text-green-700"
+            : "hover:bg-gray-100"
+        }`}
+      >
+        <BsFillCreditCardFill className="h-5 w-5 mb-1" />
+        <span className="text-sm">Credit Application</span>
+      </button>
+    </Link>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Card */}
+              <div className="rounded-lg border bg-white shadow-sm">
+                <div className="p-6">
+                  <h3 className="text-base font-semibold mb-2">
+                    Customer Support
+                  </h3>
+                  <div className="flex flex-col sm:flex-row items-center gap-3 mt-2">
+                    <div className="flex items-center text-sm">
+                      <FaPhoneAlt className="h-4 w-4 mr-2 text-green-600" />
+                      <span>For supplies (wholesale) and enquiries:</span>
+                    </div>
+                    <div className="flex flex-wrap gap-x-3 text-sm font-medium">
+                      <span>+234 903 1787 037</span>
+                      <span>+234 814 364 2387</span>
+                      <span>+234 908 1707 267</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Hero Section */}
+          <HeroSection />
+
+          {/* Category Section */}
+          <CategorySection />
+
+          {/* Featured Products */}
+          <FeaturedProducts />
+        </section>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}
