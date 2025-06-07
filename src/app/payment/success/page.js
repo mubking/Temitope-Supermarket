@@ -1,40 +1,63 @@
 "use client";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/contexts/ToastContext";
 
+export default function PaymentSuccess() {
+  const router = useRouter();
+  const { showToast } = useToast();
+
+  useEffect(() => {
+    showToast({
+      title: "Payment Successful",
+      description: "We've received your payment. We're processing your order.",
+      status: "success",
+      duration: 7000,
+    });
+"use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/contexts/ToastContext";
-import { useSession } from "next-auth/react";
 
-export default function PaymentSuccess() {
+const PaymentSuccessPage = () => {
+  const router = useRouter();
   const { clearCart } = useCart();
   const { showToast } = useToast();
-  const { status } = useSession();
-  const router = useRouter();
 
   useEffect(() => {
-    // Clear cart
+    // Clear cart and show toast
     clearCart();
-
-    // Show success toast
     showToast({
       title: "Payment Successful",
-      description: "Thank you! Your order was successful.",
+      description: "Thank you! Your order is being processed.",
       status: "success",
-      duration: 4000,
+      duration: 5000,
     });
 
-    // Redirect after delay
-    const timeout = setTimeout(() => {
-      if (status === "authenticated") {
-        router.push("/dashboard");
-      } else {
-        router.push("/");
-      }
-    }, 5000);
+    // Redirect after a short delay
+    const timer = setTimeout(() => {
+      router.push("/");
+    }, 4000);
 
-    return () => clearTimeout(timeout);
-  }, [status]);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <h1 className="text-2xl font-semibold text-green-600">
+        Payment successful! Redirecting...
+      </h1>
+    </div>
+  );
+};
+
+export default PaymentSuccessPage;
+
+    setTimeout(() => {
+      router.push("/"); // or order summary page
+    }, 5000);
+  }, []);
 
   return (
     <div className="p-10 text-center">
