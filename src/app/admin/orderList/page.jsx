@@ -25,6 +25,26 @@ export default function OrderList() {
     fetchOrders();
   }, []);
 
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update status");
+
+      const updatedOrder = await res.json();
+      setOrders((prev) =>
+        prev.map((o) => (o._id === orderId ? { ...o, status: updatedOrder.status } : o))
+      );
+    } catch (err) {
+      console.error("❌ Status update failed:", err);
+      alert("Failed to update order status.");
+    }
+  };
+
   return (
     <div className="flex w-full min-h-screen bg-gray-50">
       <AdminSidebar />
@@ -38,23 +58,33 @@ export default function OrderList() {
             {orders.map((order) => (
               <div key={order._id} className="bg-white rounded-lg shadow p-5 border">
                 <h2 className="text-lg font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                  <FaBox className="text-blue-500" /> Order from {order.customer || "Guest"}
+                  <FaBox className="text-blue-500" /> Order from{" "}
+                  {order.customer || (order.userId?.firstName && order.userId?.lastName
+                    ? `${order.userId.firstName} ${order.userId.lastName}`
+                    : "Guest")}
                 </h2>
 
+                <p className="text-sm text-gray-500 italic">
+                  {order.userId?.email || order.userEmail}
+                </p>
+
+
+
                 <div className="mb-2 text-sm">
-                  <span className="font-medium text-gray-600">Status:</span>{" "}
-                  <span
-                    className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
-                      order.status === "Processing"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : order.status === "Paid"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
+                  <span className="font-medium text-gray-600 mr-2">Status:</span>
+                  <select
+                    value={order.status}
+                    onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                    className="border rounded px-2 py-1 text-xs"
                   >
-                    {order.status}
-                  </span>
+                    <option value="Pending">Pending</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
                 </div>
+
 
                 <div className="text-sm text-gray-600 space-y-1">
                   <p><FaTruck className="inline mr-1 text-blue-400" /> {order.deliveryType} - {order.shippingOption}</p>

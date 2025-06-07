@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react"; // ✅ DON'T FORGET THIS
+import { useEffect, useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/contexts/ToastContext";
 import Link from "next/link";
@@ -17,11 +17,23 @@ const CartPage = () => {
   const [deliveryType, setDeliveryType] = useState("home");
   const [shippingOption, setShippingOption] = useState("Scheduled Collection");
   const [referralInput, setReferralInput] = useState("");
-
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("Paystack");
   const router = useRouter();
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState("");
+
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      if (status === "authenticated") {
+        const res = await fetch("/api/account/addresses");
+        const data = await res.json();
+        setSavedAddresses(data.addresses || []);
+      }
+    };
+    fetchAddresses();
+  }, [status]);
 
   const [form, setForm] = useState({
     fullName: "",
@@ -40,34 +52,34 @@ const CartPage = () => {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-const handleApplyReferral = () => {
-  if (!referralInput.trim()) {
+  const handleApplyReferral = () => {
+    if (!referralInput.trim()) {
+      showToast({
+        title: "No Code Entered",
+        description: "Please enter a referral code before applying.",
+        status: "error",
+        duration: 4000,
+      });
+      return;
+    }
+
+    if (referralInput === session?.user?.referralCode) {
+      showToast({
+        title: "Invalid Referral",
+        description: "You cannot use your own referral code.",
+        status: "error",
+        duration: 4000,
+      });
+      return;
+    }
+
     showToast({
-      title: "No Code Entered",
-      description: "Please enter a referral code before applying.",
-      status: "error",
+      title: "Referral Saved",
+      description: `You applied ${referralInput}`,
+      status: "success",
       duration: 4000,
     });
-    return;
-  }
-
-  if (referralInput === session?.user?.referralCode) {
-    showToast({
-      title: "Invalid Referral",
-      description: "You cannot use your own referral code.",
-      status: "error",
-      duration: 4000,
-    });
-    return;
-  }
-
-  showToast({
-    title: "Referral Saved",
-    description: `You applied ${referralInput}`,
-    status: "success",
-    duration: 4000,
-  });
-};
+  };
 
 
   const handleOrderSubmit = async () => {
@@ -304,21 +316,19 @@ const handleApplyReferral = () => {
               <h1 className="text-2xl font-bold mb-4">02 / Delivery Option</h1>
               <div className="flex gap-4 mb-6">
                 <button
-                  className={`px-4 py-2 rounded ${
-                    deliveryType === "home"
-                      ? "bg-green-600 text-white"
-                      : "bg-gray-200"
-                  }`}
+                  className={`px-4 py-2 rounded ${deliveryType === "home"
+                    ? "bg-green-600 text-white"
+                    : "bg-gray-200"
+                    }`}
                   onClick={() => setDeliveryType("home")}
                 >
                   Home Delivery
                 </button>
                 <button
-                  className={`px-4 py-2 rounded ${
-                    deliveryType === "store"
-                      ? "bg-green-600 text-white"
-                      : "bg-gray-200"
-                  }`}
+                  className={`px-4 py-2 rounded ${deliveryType === "store"
+                    ? "bg-green-600 text-white"
+                    : "bg-gray-200"
+                    }`}
                   onClick={() => setDeliveryType("store")}
                 >
                   Collect in Store
@@ -330,22 +340,63 @@ const handleApplyReferral = () => {
                     type="text"
                     placeholder="Full Name"
                     className="border p-2 w-full rounded"
+                    value={form.fullName}
                     onChange={(e) =>
                       setForm({ ...form, fullName: e.target.value })
                     }
                   />
+
+                  {savedAddresses.length > 0 && (
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium mb-1">
+                        Use a Saved Address
+                      </label>
+                      <select
+                        className="w-full border p-2 rounded"
+                        value={selectedAddressId}
+                        onChange={(e) => {
+                          const id = e.target.value;
+                          setSelectedAddressId(id);
+                          const selected = savedAddresses.find((addr) => addr._id === id);
+
+                          if (selected) {
+                            setForm({
+                              ...form,
+                              fullName: selected.fullName,
+                              phone: selected.phone,
+                              address: selected.address,
+                              city: selected.city,
+                              landmark: selected.note || "",
+                            });
+                          }
+                        }}
+                      >
+                        <option value="">Select from saved addresses</option>
+                        {savedAddresses.map((addr) => (
+                          <option key={addr._id} value={addr._id}>
+                            {addr.fullName} — {addr.address}, {addr.city}
+                          </option>
+                        ))}
+                      </select>
+
+                    </div>
+                  )}
+
                   <input
                     type="text"
                     placeholder="Address"
                     className="border p-2 w-full rounded"
+                    value={form.address}
                     onChange={(e) =>
                       setForm({ ...form, address: e.target.value })
                     }
                   />
+
                   <input
                     type="text"
                     placeholder="City"
                     className="border p-2 w-full rounded"
+                    value={form.city}
                     onChange={(e) => setForm({ ...form, city: e.target.value })}
                   />
 
@@ -353,10 +404,10 @@ const handleApplyReferral = () => {
                     type="text"
                     placeholder="Phone Number"
                     className="border p-2 w-full rounded"
-                    onChange={(e) =>
-                      setForm({ ...form, phone: e.target.value })
-                    }
+                    value={form.phone}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   />
+
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -449,10 +500,24 @@ const handleApplyReferral = () => {
                       {formatCurrency(calculatedSubtotal)}
                     </span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-start">
                     <span className="text-gray-600">Shipping</span>
-                    <span className="font-medium">Free</span>
+                    <div className="text-right">
+                      <p className="font-medium text-yellow-700">To be confirmed</p>
+                      <a
+                        href={`https://wa.me/2349037352863?text=${encodeURIComponent(
+                          `Hello! I'm placing an order worth ₦${calculatedSubtotal.toLocaleString()} on Temitope Supermarket. Can you please confirm the delivery fee for my location?`
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-600 text-sm underline mt-1 inline-block"
+                      >
+                        💬 Chat on WhatsApp to confirm
+                      </a>
+
+                    </div>
                   </div>
+
                   <div className="flex justify-between">
                     <span className="text-gray-600">Tax</span>
                     <span className="font-medium">₦0.00</span>
@@ -464,12 +529,7 @@ const handleApplyReferral = () => {
                       {formatCurrency(calculatedSubtotal)}
                     </span>
                   </div>
-                  {/* <button
-                    className="w-full mt-4 bg-blue-600 text-white py-2"
-                    onClick={handlePaystackCheckout}
-                  >
-                    {isProcessing ? "Processing..." : "Pay with Paystack"}
-                  </button> */}
+
                 </div>
               </div>
               <div className="mt-4 text-xs text-gray-500">
@@ -477,9 +537,8 @@ const handleApplyReferral = () => {
                 <div className="flex gap-2 mt-2">
                   <div className="bg-gray-100 p-1 rounded">
                     <button
-                      className={`cursor-pointer p-2 ${
-                        paymentMethod === "Paystack" ? "bg-blue-200" : ""
-                      }`}
+                      className={`cursor-pointer p-2 ${paymentMethod === "Paystack" ? "bg-blue-200" : ""
+                        }`}
                       onClick={() => setPaymentMethod("Paystack")}
                     >
                       Paystack Checkout
@@ -487,11 +546,10 @@ const handleApplyReferral = () => {
                   </div>
                   <div className="bg-gray-100 p-1 rounded">
                     <button
-                      className={`cursor-pointer p-2 ${
-                        paymentMethod === "Cash on Delivery"
-                          ? "bg-blue-200"
-                          : ""
-                      }`}
+                      className={`cursor-pointer p-2 ${paymentMethod === "Cash on Delivery"
+                        ? "bg-blue-200"
+                        : ""
+                        }`}
                       onClick={() => setPaymentMethod("Cash on Delivery")}
                     >
                       Cash on Delivery
@@ -499,9 +557,8 @@ const handleApplyReferral = () => {
                   </div>
                   <div className="bg-gray-100 p-1 rounded">
                     <button
-                      className={`cursor-pointer p-2 ${
-                        paymentMethod === "Credit" ? "bg-blue-200" : ""
-                      }`}
+                      className={`cursor-pointer p-2 ${paymentMethod === "Credit" ? "bg-blue-200" : ""
+                        }`}
                       onClick={() => setPaymentMethod("Credit")}
                     >
                       Credit Option

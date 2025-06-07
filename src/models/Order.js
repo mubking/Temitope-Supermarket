@@ -2,13 +2,16 @@ import mongoose from "mongoose";
 
 const OrderSchema = new mongoose.Schema(
   {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
     customer: String,
     amount: Number,
     userEmail: { type: String, required: true },
-
     status: {
       type: String,
-  enum: ["Pending", "Processing", "Paid", "Failed"], // ✅ includes "Pending"
+      enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"],
       default: "Processing",
     },
     paymentMethod: String,
@@ -26,8 +29,22 @@ const OrderSchema = new mongoose.Schema(
     shippingOption: String,
     deliveryDate: String,
     deliveryTime: String,
+
+    // ✅ These should be inside the object
+    refundRequest: {
+      type: Boolean,
+      default: false,
+    },
+    refundDetails: {
+      type: Object,
+      default: null,
+    },
+    deliveredAt: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );
 
-export default mongoose.models.Order || mongoose.model("Order", OrderSchema);
+const Order = mongoose.models.Order || mongoose.model("Order", OrderSchema);
+export default Order;

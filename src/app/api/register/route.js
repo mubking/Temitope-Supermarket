@@ -2,13 +2,10 @@ import { NextResponse } from "next/server";
 import { connectToDB } from "@/utils/db";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
-// import crypto from "crypto";
+import { randomBytes } from "crypto"; // ✅ Correct import for server-side
 
 function generateReferralCode() {
-  return Array.from(crypto.getRandomValues(new Uint8Array(4)))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("")
-    .toUpperCase(); // e.g. "4F7A2C19"
+  return randomBytes(4).toString("hex").toUpperCase(); // e.g. "4F7A2C19"
 }
 
 export async function POST(req) {
@@ -57,4 +54,3 @@ export async function POST(req) {
     );
   }
 }
-

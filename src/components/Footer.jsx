@@ -79,7 +79,7 @@ const Footer = () => {
               <h3 className="text-lg font-semibold mb-4">Contact Info</h3>
               <address className="not-italic text-gray-300 space-y-2">
                 <p className="flex items-center">
-                  📍 123 Grocery Street, Foodville, FK 12345
+                  📍 No.10 Taiwo Isale Road,ILorin, Kwara State
                 </p>
                 <p className="flex items-center">
                   📧 info@temitopesupermarket.com
@@ -102,7 +102,17 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-gray-700 pt-6 pb-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 mb-4 md:mb-0">&copy; {currentYear} Temitope Supermarket. All rights reserved.</p>
+            <p className="text-gray-400 mb-4 md:mb-0">&copy; {currentYear} Temitope Supermarket. All rights reserved.
+              Design & Code by{" "}
+              <a
+                href="https://my-portfolio-sable-kappa.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:underline"
+              >
+                MubaraqCodes
+              </a>
+            </p>
             <div className="flex space-x-3">
               {/* Payment icons could be placed here */}
               <span className="bg-white px-2 py-1 rounded">💳</span>
@@ -110,6 +120,7 @@ const Footer = () => {
           </div>
         </div>
       </div>
+
     </footer>
   );
 };

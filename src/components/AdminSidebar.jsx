@@ -24,6 +24,7 @@ const AdminSidebar = () => {
     { href: "/admin/credit-applications", label: "Credit Apps", icon: <FileText className="w-5 h-5" /> },
     { href: "/admin/settings", label: "Settings", icon: <Settings className="w-5 h-5" /> },
     { href: "/admin/orderList", label: "Order list", icon: <Settings className="w-5 h-5" /> },
+    { href: "/api/account/addresses ", label: "User  Address", icon: <Settings className="w-5 h-5" /> },
   ];
 
   return (

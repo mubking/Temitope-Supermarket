@@ -21,7 +21,7 @@ function Homepage() {
         <div className="flex items-center gap-2">
         <FaPhone />
         <div>
-        <h1 className="text-lg"> For supplies(wholesale) and enquires call +234 905 611 6119 , +234 903 735 2863</h1>
+        <h1 className="text-lg"> For supplies(wholesale) and enquiries call +234 905 611 6119 , +234 903 735 2863</h1>
         </div>
         </div>
       </div>

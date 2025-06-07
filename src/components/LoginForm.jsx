@@ -24,19 +24,31 @@ const LoginForm = () => {
     });
 
     if (result?.error) {
-      showToast(result.error, "error");
+      showToast({
+        title: "Login Failed",
+        description: result.error || "Invalid email or password",
+        status: "error",
+      });
       setIsLoading(false);
       return;
     }
 
     const session = await getSession();
-    console.log("SESSION INFO:", session);
-
     if (!session) {
-      showToast("Could not fetch session", "error");
+      showToast({
+        title: "Session Error",
+        description: "Could not fetch session",
+        status: "error",
+      });
       setIsLoading(false);
       return;
     }
+
+    showToast({
+      title: "🎉 Login Successful",
+      description: `Welcome back, ${session.user.firstName || "User"}!`,
+      status: "success",
+    });
 
     if (session.user.isAdmin) {
       router.push("/admin");

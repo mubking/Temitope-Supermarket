@@ -3,30 +3,55 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
+import { useToast } from "@/contexts/ToastContext";
 
 const ProductCard = ({ product }) => {
   const [isWishlist, setIsWishlist] = useState(false);
   const { cart, addToCart } = useCart();
+  const { showToast } = useToast();
 
   useEffect(() => {
     const storedWishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
     setIsWishlist(storedWishlist.includes(product._id));
-
-  }, [product.id]);
+  }, [product._id]);
 
   const handleWishlist = () => {
     const storedWishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
     let updatedWishlist;
 
     if (isWishlist) {
-      updatedWishlist = storedWishlist.filter((id) => id !== product.id);
+      updatedWishlist = storedWishlist.filter((id) => id !== product._id);
       setIsWishlist(false);
     } else {
-      updatedWishlist = [...storedWishlist, product.id];
+      updatedWishlist = [...storedWishlist, product._id];
       setIsWishlist(true);
     }
 
     localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
+  };
+
+  const handleAddToCart = () => {
+    if (!product.inStock) {
+      showToast({
+        title: "🚫 Out of Stock",
+        description: "This product is currently unavailable. You’ll be notified when it’s back.",
+        status: "warning",
+      });
+      return;
+    }
+
+    addToCart({
+      id: product._id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    });
+
+    showToast({
+      title: "✅ Added to Cart",
+      description: `${product.name} was added to your cart.`,
+      status: "success",
+    });
   };
 
   return (
@@ -56,18 +81,19 @@ const ProductCard = ({ product }) => {
         </svg>
       </button>
 
-      <Link href={`/product/${product.id}`}>
+      <Link href={`/product/${product._id}`}>
         <div className="h-48 overflow-hidden cursor-pointer">
           <img
-            src={product.image}
+            src={product.image || "/placeholder.jpg"}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform hover:scale-110"
+            className="max-h-48 w-auto mx-auto object-contain transition-transform hover:scale-105"
           />
+
         </div>
       </Link>
 
       <div className="p-4">
-        <Link href={`/product/${product.id}`}>
+        <Link href={`/product/${product._id}`}>
           <h3 className="font-medium text-gray-800 mb-1 hover:text-blue-600 transition-colors cursor-pointer">
             {product.name}
           </h3>
@@ -86,16 +112,10 @@ const ProductCard = ({ product }) => {
         </div>
 
         <button
-          onClick={() =>
-            addToCart({
-              id: product._id,
-
-              name: product.name,
-              price: product.price,
-              image: product.image,
-            })
-          }
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex items-center justify-center cursor-pointer"
+          onClick={handleAddToCart}
+          disabled={!product.inStock}
+          className={`w-full text-white py-2 px-4 rounded flex items-center justify-center cursor-pointer 
+            ${product.inStock ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"}`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -111,7 +131,7 @@ const ProductCard = ({ product }) => {
               d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
             />
           </svg>
-          Add to Cart
+          {product.inStock ? "Add to Cart" : "Out of Stock"}
         </button>
       </div>
     </div>

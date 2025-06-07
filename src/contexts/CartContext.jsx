@@ -8,7 +8,7 @@ export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
   const { data: session } = useSession();
 
-  // Load from localStorage initially (only for guests)
+  // 1️⃣ Load from localStorage initially (only for guests)
   useEffect(() => {
     const localCart = localStorage.getItem("cart");
     if (localCart) {
@@ -16,31 +16,54 @@ export const CartProvider = ({ children }) => {
     }
   }, []);
 
-  // Save to localStorage on cart change (to persist for guests)
+  // 2️⃣ Save to localStorage on cart change (to persist for guests)
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-  // 🔁 Load cart from DB if user is logged in
+  // 3️⃣ Load cart from DB if user is logged in
   useEffect(() => {
-  const restoreCart = async () => {
-    if (session?.user) {
-      try {
-        const res = await axios.get("/api/cart/get");
-        const savedCart = res.data.cart;
-        if (savedCart?.length) {
-          setCart(savedCart); // depends on your context logic
+    const restoreCart = async () => {
+      if (session?.user) {
+        try {
+          const res = await axios.get("/api/cart/get");
+          const savedCart = res.data.cart;
+          if (savedCart?.length) {
+            setCart(savedCart);
+          }
+        } catch (err) {
+          console.error("Failed to restore cart", err);
         }
-      } catch (err) {
-        console.error("Failed to restore cart", err);
       }
-    }
-  };
+    };
 
-  restoreCart();
-}, [session]);
+    restoreCart();
+  }, [session]);
 
+  // 4️⃣ Save cart to DB for abandoned cart tracking
+  useEffect(() => {
+    const saveCartWithTimestamp = async () => {
+      if (cart.length > 0 && session?.user) {
+        try {
+          await fetch("/api/cart/track-abandon", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: session.user.id,
+              cart,
+              updatedAt: new Date().toISOString(),
+            }),
+          });
+        } catch (err) {
+          console.error("Failed to track abandoned cart", err);
+        }
+      }
+    };
 
+    saveCartWithTimestamp();
+  }, [cart, session]);
+
+  // Cart control functions
   const addToCart = (item) => {
     setCart((prev) => {
       const exists = prev.find((i) => i.id === item.id);
@@ -60,7 +83,7 @@ export const CartProvider = ({ children }) => {
   const updateQuantity = (id, quantity) => {
     setCart((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, quantity: quantity } : item
+        item.id === id ? { ...item, quantity } : item
       )
     );
   };
@@ -71,7 +94,14 @@ export const CartProvider = ({ children }) => {
 
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, setCart }}
+      value={{
+        cart,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        setCart,
+      }}
     >
       {children}
     </CartContext.Provider>

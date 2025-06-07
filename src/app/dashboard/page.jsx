@@ -75,7 +75,9 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-2">
                   <div className="text-sm text-gray-600">Your coupon code:</div>
                   <span className="inline-block bg-gray-50 border border-green-200 text-green-700 font-mono rounded-full px-3 py-1 text-xs font-semibold">
-                    TMT12345
+                     <strong className="">
+                        {session?.user?.referralCode || "Not available"}
+                      </strong>
                   </span>
                 </div>
               </div>
@@ -89,7 +91,7 @@ export default function DashboardPage() {
             <div className="max-w-4xl mx-auto">
               {/* Promo Banner */}
               <div className="mb-8 bg-gradient-to-r from-gray-900 to-gray-800 text-white overflow-hidden rounded-lg border shadow-sm">
-                <div className="p-6">
+                {/* <div className="p-6">
                   <h3 className="text-lg font-medium mb-2">
                     Share your coupon code with family, friends & foes to earn
                     commission
@@ -115,7 +117,7 @@ export default function DashboardPage() {
                       </strong>
                     </p>
                   </div>
-                </div>
+                </div> */}
               </div>
 
               {/* Dashboard Navigation */}
@@ -127,50 +129,50 @@ export default function DashboardPage() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4">
                     <Link href="/dashboard/orders">
                       <button
-                        className={`flex flex-col items-center p-4 rounded-lg transition ${
-                          pathname === "/dashboard/orders"
+                        className={`flex flex-col items-center p-4 rounded-lg transition ${pathname === "/dashboard/orders"
                             ? "bg-green-50 text-green-700"
                             : "hover:bg-gray-100"
-                        }`}
+                          }`}
                       >
                         <FaCartArrowDown className="h-5 w-5 mb-1" />
                         <span className="text-sm">My Orders History</span>
                       </button>
                     </Link>
-                    <button
-                      onClick={() => setActiveTab("account")}
-                      className={`flex flex-col items-center p-4 rounded-lg transition ${
-                        activeTab === "account"
-                          ? "bg-green-50 text-green-700"
-                          : "hover:bg-gray-100"
-                      }`}
-                    >
-                      <FaUser className="h-5 w-5 mb-1" />
-                      <span className="text-sm">Account Details</span>
-                    </button>
-                    <button
-                      onClick={() => setActiveTab("shipping")}
-                      className={`flex flex-col items-center p-4 rounded-lg transition ${
-                        activeTab === "shipping"
-                          ? "bg-green-50 text-green-700"
-                          : "hover:bg-gray-100"
-                      }`}
-                    >
-                      <FaLocationDot className="h-5 w-5 mb-1" />
-                      <span className="text-sm">Shipping Info</span>
-                    </button>
-                     <Link href="/credit-application">
-      <button
-        className={`flex flex-col items-center p-4 rounded-lg transition ${
-          pathname === "/credit-application"
-            ? "bg-green-50 text-green-700"
-            : "hover:bg-gray-100"
-        }`}
-      >
-        <BsFillCreditCardFill className="h-5 w-5 mb-1" />
-        <span className="text-sm">Credit Application</span>
-      </button>
-    </Link>
+                    <Link href="/account/profile">
+                      <button
+                        className={`flex flex-col items-center p-4 rounded-lg transition ${pathname === "/account/profile"
+                            ? "bg-green-50 text-green-700"
+                            : "hover:bg-gray-100"
+                          }`}
+                      >
+                        <FaUser className="h-5 w-5 mb-1" />
+                        <span className="text-sm">Account Details</span>
+                      </button>
+                    </Link>
+
+                    <Link href="/account/shipping">
+                      <button
+                        className={`flex flex-col items-center p-4 rounded-lg transition ${pathname === "/account/shipping"
+                            ? "bg-green-50 text-green-700"
+                            : "hover:bg-gray-100"
+                          }`}
+                      >
+                        <FaLocationDot className="h-5 w-5 mb-1" />
+                        <span className="text-sm">Shipping Info</span>
+                      </button>
+                    </Link>
+
+                    <Link href="/credit-application">
+                      <button
+                        className={`flex flex-col items-center p-4 rounded-lg transition ${pathname === "/credit-application"
+                            ? "bg-green-50 text-green-700"
+                            : "hover:bg-gray-100"
+                          }`}
+                      >
+                        <BsFillCreditCardFill className="h-5 w-5 mb-1" />
+                        <span className="text-sm">Credit Application</span>
+                      </button>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -187,9 +189,8 @@ export default function DashboardPage() {
                       <span>For supplies (wholesale) and enquiries:</span>
                     </div>
                     <div className="flex flex-wrap gap-x-3 text-sm font-medium">
-                      <span>+234 903 1787 037</span>
-                      <span>+234 814 364 2387</span>
-                      <span>+234 908 1707 267</span>
+                      <span>+234 905 611 6119</span>
+                      <span>+234 903 735 2863</span>
                     </div>
                   </div>
                 </div>

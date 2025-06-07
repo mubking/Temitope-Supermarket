@@ -1,20 +1,39 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import axios from "axios";
 
 const SpecialOfferBanner = () => {
   const [isVisible, setIsVisible] = useState(true);
+  const [shouldShow, setShouldShow] = useState(false);
+  const { data: session } = useSession();
 
-  if (!isVisible) {
-    return null;
-  }
+  useEffect(() => {
+    const checkUserStatus = async () => {
+      if (!session?.user?.email) return;
+
+      try {
+        const res = await axios.get(`/api/user-status?email=${session.user.email}`);
+        if (!res.data?.hasReceivedFirstOrder) {
+          setShouldShow(true);
+        }
+      } catch (err) {
+        console.error("User status fetch error:", err);
+      }
+    };
+
+    checkUserStatus();
+  }, [session]);
+
+  if (!isVisible || !shouldShow) return null;
 
   return (
     <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white text-center py-2 relative">
       <p className="text-sm md:text-base">
         🎉 Free delivery on orders above ₦100,000 within Kwara State! Use code: <span className="font-bold">temitope</span>
       </p>
-      <button 
+      <button
         onClick={() => setIsVisible(false)}
         className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white"
         aria-label="Close"

@@ -1,5 +1,3 @@
-// File: src/app/api/admin/products/[id]/route.js
-
 import { NextResponse } from "next/server";
 import { connectToDB } from "@/utils/db";
 import Product from "@/models/Product";
@@ -21,7 +19,22 @@ export async function PATCH(req, { params }) {
     const body = await req.json();
     await connectToDB();
     console.log("Updating product with ID:", params.id);
-    const updated = await Product.findByIdAndUpdate(params.id, body, { new: true });
+
+    const { category, ...rest } = body;
+
+    let updateData = { ...rest };
+
+    if (category) {
+      const categorySlug = category
+        .toLowerCase()
+        .replace(/&/g, "and")
+        .replace(/\s+/g, "-");
+
+      updateData.category = category;
+      updateData.categorySlug = categorySlug;
+    }
+
+    const updated = await Product.findByIdAndUpdate(params.id, updateData, { new: true });
     return NextResponse.json(updated);
   } catch (err) {
     console.error("❌ PATCH error:", err);
