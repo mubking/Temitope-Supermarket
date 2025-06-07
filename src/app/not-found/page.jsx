@@ -1,4 +1,4 @@
-import NotFound from '@/components/NotFound'
+import NotFound from '@/pages/NotFound'
 import React from 'react'
 
 function page() {
