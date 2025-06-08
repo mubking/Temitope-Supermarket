@@ -7,7 +7,7 @@ import Cart from "@/models/Cart"; // make sure you have a Cart model
 export async function GET(req) {
   await connectToDB();
 
-  const session = await getServerSession(req, authOptions);
+  const session = await getServerSession(authOptions);
 
   if (!session?.user) {
     return NextResponse.json({ message: "Not authenticated" }, { status: 401 });

@@ -8,7 +8,7 @@ import { NextResponse } from "next/server";
 export async function GET(req) {
   try {
     await connectToDB();
-    const session = await getServerSession(req, authOptions);
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.isAdmin) {
       return NextResponse.json({ message: "Unauthorized" }, {
@@ -21,7 +21,7 @@ export async function GET(req) {
     //   .populate("userId", "email firstName lastName");
     const orders = await Order.find().sort({ createdAt: -1 });
     return NextResponse.json({ orders }, {
-      status: 200,
+      status: 200
     });
   } catch (error) {
     console.error("Error fetching admin orders:", error);
