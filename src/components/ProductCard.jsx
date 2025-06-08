@@ -7,7 +7,7 @@ import { useToast } from "@/contexts/ToastContext";
 
 const ProductCard = ({ product }) => {
   const [isWishlist, setIsWishlist] = useState(false);
-  const { cart, addToCart } = useCart();
+  const { cart, addToCart } = useCart() || {};
   const { showToast } = useToast();
 
   useEffect(() => {

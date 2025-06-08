@@ -4,7 +4,7 @@
 import { useCart } from "@/contexts/CartContext";
 
 export default function CartDrawer({ isOpen, onClose }) {
-  const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { cart, removeFromCart, updateQuantity, clearCart } = useCart() || {};
 
   if (!isOpen) return null;
 

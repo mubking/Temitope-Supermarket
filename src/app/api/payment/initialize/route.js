@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions"; // adjust path if needed
 
 export async function POST(req) {
-  // ✅ Step 1: Protect the route
-  const session = await getServerSession(authOptions);
+  const session = await req.headers.get("session"); 
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

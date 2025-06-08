@@ -9,7 +9,12 @@ export default function OrderList() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await fetch("/api/admin/orders");
+        const res = await fetch("/api/admin/orders", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "isAdmin": `${isAdmin}`, // Assuming you have a token in session
+          }});
         const data = await res.json();
         if (Array.isArray(data.orders)) {
           setOrders(data.orders);

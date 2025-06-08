@@ -5,13 +5,19 @@ import DashboardNavbar from "@/components/DashboardNavbar";
 import Pusher from "pusher-js";
 
 const OrderHistoryPage = () => {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession() || {};
   const [orders, setOrders] = useState([]);
   const [hasFetched, setHasFetched] = useState(false);
+  const email = session?.user?.email || "";
 
   // ✅ Fetch user's order history once
   const fetchOrders = async () => {
-    const res = await fetch("/api/orders/history");
+    const res = await fetch("/api/orders/history", {
+      headers: {
+        "Content-Type": "application/json",
+        "email": `${email}`, // must be a string
+      },
+    });
     const data = await res.json();
     setOrders(data);
   };
@@ -113,33 +119,32 @@ const OrderHistoryPage = () => {
         </table>
       )}
       <div className="mt-6 p-4 bg-yellow-100 text-sm rounded-md text-yellow-800 border border-yellow-300">
-  <p className="mb-2 font-semibold">Need a refund?</p>
-  <p>
-    If your order was delivered within the last <strong>3 days</strong> and you want to request a return or refund,
-    please contact our support team:
-  </p>
-  <div className="mt-2 flex gap-4">
-    <a
-      href="mailto:support@temitopesupermarket.com?subject=Refund Request"
-      className="underline text-blue-700"
-    >
-      📧 Email Support
-    </a>
-    <a
-  href={`https://wa.me/2349056116119?text=${encodeURIComponent(
-    `Hello Temitope Supermarket,\n\nI would like to request a refund.\n\nMy name is ${
-      session?.user?.name || "[Enter your full name]"
-    }, and my email is ${session?.user?.email || ""}.\nPlease assist me.`
-  )}`}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="underline text-green-700"
->
-  💬 WhatsApp Support
-</a>
+        <p className="mb-2 font-semibold">Need a refund?</p>
+        <p>
+          If your order was delivered within the last <strong>3 days</strong> and you want to request a return or refund,
+          please contact our support team:
+        </p>
+        <div className="mt-2 flex gap-4">
+          <a
+            href="mailto:support@temitopesupermarket.com?subject=Refund Request"
+            className="underline text-blue-700"
+          >
+            📧 Email Support
+          </a>
+          <a
+            href={`https://wa.me/2349056116119?text=${encodeURIComponent(
+              `Hello Temitope Supermarket,\n\nI would like to request a refund.\n\nMy name is ${session?.user?.name || "[Enter your full name]"
+              }, and my email is ${session?.user?.email || ""}.\nPlease assist me.`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline text-green-700"
+          >
+            💬 WhatsApp Support
+          </a>
 
-  </div>
-</div>
+        </div>
+      </div>
 
     </div>
   );

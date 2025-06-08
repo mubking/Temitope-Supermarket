@@ -1,3 +1,4 @@
+"use client";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import axios from "axios";
@@ -6,7 +7,8 @@ const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
-  const { data: session } = useSession();
+  const { data: session } = useSession() || {};
+  const userId = session?.user?.id || ""; 
 
   // 1️⃣ Load from localStorage initially (only for guests)
   useEffect(() => {
@@ -26,7 +28,12 @@ export const CartProvider = ({ children }) => {
     const restoreCart = async () => {
       if (session?.user) {
         try {
-          const res = await axios.get("/api/cart/get");
+          const res = await axios.get("/api/cart/get", {
+            headers: {
+              "userId": `${userId}`, // must be a string
+            },
+          });
+
           const savedCart = res.data.cart;
           if (savedCart?.length) {
             setCart(savedCart);

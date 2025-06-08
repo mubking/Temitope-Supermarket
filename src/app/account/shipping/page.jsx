@@ -2,8 +2,10 @@
 import { useEffect, useState } from "react";
 import AddAddressForm from "@/components/AddAddressForm";
 import { useToast } from "@/contexts/ToastContext";
+import { useSession } from "next-auth/react";
 
 const ShippingInfoPage = () => {
+    const { data: session } = useSession() || {};
     const [addresses, setAddresses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [editing, setEditing] = useState(null); // address object
@@ -19,7 +21,11 @@ const ShippingInfoPage = () => {
 
 
     const fetchAddresses = async () => {
-        const res = await fetch("/api/account/addresses");
+        const res = await fetch("/api/account/addresses", {
+            headers: {
+                "session": `${session?.user?.id}`, // Ensure email is sent in headers
+            },
+        });
         const data = await res.json();
         setAddresses(data.addresses || []);
         setLoading(false);
@@ -80,7 +86,11 @@ const ShippingInfoPage = () => {
                                                 try {
                                                     const res = await fetch("/api/account/addresses", {
                                                         method: "DELETE",
-                                                        headers: { "Content-Type": "application/json" },
+                                                        headers: {
+                                                            "Content-Type": "application/json",
+                                                            "session": `${session?.user?.id}`, // Ensure email is sent in headers
+                                                        },
+
                                                         body: JSON.stringify({ id: addr._id }),
                                                     });
 
@@ -124,7 +134,10 @@ const ShippingInfoPage = () => {
                         e.preventDefault();
                         const res = await fetch("/api/account/addresses", {
                             method: "PATCH",
-                            headers: { "Content-Type": "application/json" },
+                            headers: {
+                                "Content-Type": "application/json",
+                                "session": `${session?.user?.id}`, // Ensure email is sent in headers
+                            },
                             body: JSON.stringify({ ...formData, id: editing._id }),
                         });
                         const data = await res.json();

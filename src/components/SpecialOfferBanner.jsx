@@ -7,7 +7,7 @@ import axios from "axios";
 const SpecialOfferBanner = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [shouldShow, setShouldShow] = useState(false);
-  const { data: session } = useSession();
+  const { data: session } = useSession() || {};
 
   useEffect(() => {
     const checkUserStatus = async () => {

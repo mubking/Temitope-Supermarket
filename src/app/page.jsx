@@ -13,7 +13,7 @@ import NewsletterSection from "@/components/NewsletterSection";
 import SpecialOfferBanner from "@/components/SpecialOfferBanner";
 
 function HomePage() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession() || {};
   const router = useRouter();
 
   useEffect(() => {

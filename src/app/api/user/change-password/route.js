@@ -1,12 +1,10 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions"; 
 import User from "@/models/User";
 import { connectToDB } from "@/utils/db";
 import bcrypt from "bcryptjs";
 
 export async function POST(req) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
+  const session = await req.headers.get("session"); 
+  if (!session) {
     return new Response("Unauthorized", { status: 401 });
   }
 
@@ -14,7 +12,7 @@ export async function POST(req) {
 
   await connectToDB();
 
-  const user = await User.findOne({ email: session.user.email });
+  const user = await User.findOne({ email: session });
   if (!user) return new Response("User not found", { status: 404 });
 
   const isValid = await bcrypt.compare(currentPassword, user.password);

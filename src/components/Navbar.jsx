@@ -10,7 +10,7 @@ import { useCart } from '@/contexts/CartContext';
 const Navbar = () => {
   const { cart } = useCart();
   const router = useRouter();
-const { data: session, status } = useSession();
+const { data: session, status } = useSession() || {};
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);

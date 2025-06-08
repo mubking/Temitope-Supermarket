@@ -7,7 +7,7 @@ import { useEffect } from "react";
 import AdminSidebar from './AdminSidebar';
 const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession() || {};
   const router = useRouter();
 
   useEffect(() => {

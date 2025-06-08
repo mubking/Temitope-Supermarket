@@ -4,6 +4,7 @@ import User from "@/models/User";
 import bcrypt from "bcryptjs";
 
 export const authOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -23,15 +24,16 @@ export const authOptions = {
         if (!isValid) {
           throw new Error("Incorrect password");
         }
-
         return {
           id: user._id.toString(),
           email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          isAdmin: user.isAdmin,
-          referralCode: user.referralCode,
+          firstName: user.firstName || "",
+          lastName: user.lastName || "",
+          isAdmin: user.isAdmin || false,
+          referralCode: user.referralCode || null,
+          usedReferralCode: user.usedReferralCode || null,
         };
+
       },
     }),
   ],
@@ -49,9 +51,10 @@ export const authOptions = {
         token.firstName = user.firstName;
         token.lastName = user.lastName;
         token.isAdmin = user.isAdmin;
-        token.referralCode = user.referralCode;
-        token.usedReferralCode = user.usedReferralCode;
+        token.referralCode = user.referralCode || null;
+        token.usedReferralCode = user.usedReferralCode || null;
       }
+
       return token;
     },
     async session({ session, token }) {

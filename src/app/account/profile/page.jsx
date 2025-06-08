@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useToast } from "@/contexts/ToastContext";
 
 export default function ProfilePage() {
-  const { data: session } = useSession();
+  const { data: session } = useSession() || {};
   const { showToast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -30,66 +30,66 @@ export default function ProfilePage() {
   }, [session]);
 
   const handleProfileUpdate = async (e) => {
-  e.preventDefault();
-  try {
-    console.log("Submitting profile update:", formData);
+    e.preventDefault();
+    try {
+      console.log("Submitting profile update:", formData);
 
-    const res = await fetch("/api/user/profile", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-
-    const data = await res.json();
-    if (res.ok) {
-      await fetch("/api/auth/session?update=true"); // 🔄 Refresh session
-showToast({
-  title: "✅ Profile updated! Changes will reflect after your next login.",
-  status: "info", // or "success", "error"
-});
-    } else {
-      showToast(data.message || "Failed to update profile", "error");
-    }
-  } catch (err) {
-    console.error("Profile update error:", err);
-    showToast("Server error", "error");
-  }
-};
-
-const handleChangePassword = async (e) => {
-  e.preventDefault();
-  try {
-    const res = await fetch("/api/user/change-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(passwords),
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      showToast({
-        title: "✅ Password updated successfully.",
-        status: "success",
+      const res = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "session": `${session?.user?.email}` }, // Ensure email is sent in headers
+        body: JSON.stringify(formData),
       });
-      setPasswords({ currentPassword: "", newPassword: "" });
-    } else {
-      let message = data.message || "Something went wrong.";
-      if (res.status === 401) {
-        message = "❌ Current password is incorrect. Please try again.";
-      } else if (res.status === 400) {
-        message = "⚠️ Please fill in both password fields.";
+
+      const data = await res.json();
+      if (res.ok) {
+        await fetch("/api/auth/session?update=true"); // 🔄 Refresh session
+        showToast({
+          title: "✅ Profile updated! Changes will reflect after your next login.",
+          status: "info", // or "success", "error"
+        });
+      } else {
+        showToast(data.message || "Failed to update profile", "error");
       }
-      showToast({ title: message, status: "error" });
+    } catch (err) {
+      console.error("Profile update error:", err);
+      showToast("Server error", "error");
     }
-  } catch (err) {
-    console.error("Password change error:", err);
-    showToast({
-      title: "🚨 Server error. Please try again later.",
-      status: "error",
-    });
-  }
-};
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/user/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "session": `${session?.user?.email}` }, // Ensure email is sent in headers
+        body: JSON.stringify(passwords),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        showToast({
+          title: "✅ Password updated successfully.",
+          status: "success",
+        });
+        setPasswords({ currentPassword: "", newPassword: "" });
+      } else {
+        let message = data.message || "Something went wrong.";
+        if (res.status === 401) {
+          message = "❌ Current password is incorrect. Please try again.";
+        } else if (res.status === 400) {
+          message = "⚠️ Please fill in both password fields.";
+        }
+        showToast({ title: message, status: "error" });
+      }
+    } catch (err) {
+      console.error("Password change error:", err);
+      showToast({
+        title: "🚨 Server error. Please try again later.",
+        status: "error",
+      });
+    }
+  };
 
 
   return (

@@ -8,7 +8,7 @@ import { signOut } from "next-auth/react";
 
 
 const DashboardNavbar = () => {
-  const { cart } = useCart(); // Get the cart from context
+  const { cart } = useCart() || {}; // Get the cart from context
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');

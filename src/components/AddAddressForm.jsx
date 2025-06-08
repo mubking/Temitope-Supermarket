@@ -1,8 +1,10 @@
 "use client";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { useSession } from "next-auth/react";
 
 const AddAddressForm = ({ onSuccess }) => {
+  const { data: session } = useSession() || {};
   const [form, setForm] = useState({
     fullName: "",
     phone: "",
@@ -22,7 +24,10 @@ const AddAddressForm = ({ onSuccess }) => {
 
     const res = await fetch("/api/account/addresses", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "session": `${session?.user?.id}`, // Ensure email is sent in headers
+      },
       body: JSON.stringify(form),
     });
 

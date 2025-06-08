@@ -10,8 +10,8 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 const CartPage = () => {
-  const { data: session, status } = useSession();
-  const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { data: session, status } = useSession() || {};
+  const { cart, removeFromCart, updateQuantity, clearCart } = useCart() || {};
   const { showToast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [deliveryType, setDeliveryType] = useState("home");
@@ -23,11 +23,16 @@ const CartPage = () => {
   const router = useRouter();
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
+  const email = session?.user?.email || "";
 
   useEffect(() => {
     const fetchAddresses = async () => {
       if (status === "authenticated") {
-        const res = await fetch("/api/account/addresses");
+        const res = await fetch("/api/account/addresses", {
+          headers: {
+            "session": `${email}`, // Ensure email is sent in headers
+          },
+        });
         const data = await res.json();
         setSavedAddresses(data.addresses || []);
       }
@@ -164,7 +169,7 @@ const CartPage = () => {
 
       const res = await fetch("/api/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "email": `${email}` },
         body: JSON.stringify(payload),
       });
 
@@ -173,7 +178,7 @@ const CartPage = () => {
       if (paymentMethod === "Paystack") {
         const payRes = await fetch("/api/payment/initialize", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "session": `${session?.user?.id}` },
           body: JSON.stringify({
             email: form.phone
               ? `${form.phone}@temitopepay.com`

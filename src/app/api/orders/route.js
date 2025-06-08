@@ -1,13 +1,11 @@
 // src/app/api/orders/route.js
 import { connectToDB } from "@/utils/db";
 import Order from "@/models/Order";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions"; 
 
 export async function POST(req) {
-  const session = await getServerSession(authOptions);
+  const email = await req.headers.get("email"); 
 
-  if (!session?.user) {
+  if (!email) {
     return new Response("Unauthorized", { status: 401 });
   }
 
@@ -16,7 +14,7 @@ export async function POST(req) {
     const data = await req.json();
 
     const newOrder = await Order.create({
-        userEmail: session.user.email, // or session.user.id if you prefer
+        userEmail: email, // or session.user.id if you prefer
       customer: data.customer,
       amount: data.amount,
       paymentMethod: data.paymentMethod,

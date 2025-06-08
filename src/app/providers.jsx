@@ -6,7 +6,7 @@ import { CartProvider } from '../contexts/CartContext';
 import ToastWrapper from '@/components/ToastWrapper';
 
 function SyncCartAfterLogin() {
-  const { data: session } = useSession();
+  const { data: session } = useSession() || {};
 
   useEffect(() => {
     const syncCart = async () => {

@@ -1,19 +1,17 @@
 import { connectToDB } from "@/utils/db";
 import Order from "@/models/Order";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions"; 
 
 export async function GET(req) {
-  const session = await getServerSession(authOptions);
+  const email = await req.headers.get("email"); 
 
-  if (!session?.user) {
+  if (!email) {
     return new Response("Unauthorized", { status: 401 });
   }
 
   try {
     await connectToDB();
 
-    const orders = await Order.find({ userEmail: session.user.email }).sort({ createdAt: -1 });
+    const orders = await Order.find({ userEmail: email }).sort({ createdAt: -1 });
 
     return new Response(JSON.stringify(orders), {
       status: 200,

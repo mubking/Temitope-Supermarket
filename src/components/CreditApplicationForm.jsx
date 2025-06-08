@@ -34,7 +34,7 @@ const [verifying, setVerifying] = useState(false);
     });
   };
 
-const { data: session } = useSession();
+const { data: session } = useSession() || {};
 
 useEffect(() => {
   if (session?.user?.email) {

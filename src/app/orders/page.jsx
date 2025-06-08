@@ -4,14 +4,15 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 
 export default function OrderHistoryPage() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession() || {};
   const [orders, setOrders] = useState([]);
+  const email = session?.user?.email || "";
 
   useEffect(() => {
     const fetchOrders = async () => {
       if (status === "authenticated") {
         try {
-          const res = await fetch("/api/orders");
+          const res = await fetch("/api/orders", { headers: { "Content-Type": "application/json", "email": `${email}` } });
           const data = await res.json();
           if (Array.isArray(data)) {
             setOrders(data);

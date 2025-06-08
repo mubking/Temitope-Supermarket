@@ -1,23 +1,18 @@
 // src/app/api/admin/orders/route.js
 import { connectToDB } from "@/utils/db";
 import Order from "@/models/Order";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { NextResponse } from "next/server";
 
 export async function GET(req) {
   try {
+    const isAdmin = await req.headers.get("isAdmin"); 
     await connectToDB();
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.isAdmin) {
+    if (!isAdmin) {
       return NextResponse.json({ message: "Unauthorized" }, {
         status: 403,
       });
     }
-
-    // const orders = await Order.find()
-    //   .sort({ createdAt: -1 })
-    //   .populate("userId", "email firstName lastName");
+ 
     const orders = await Order.find().sort({ createdAt: -1 });
     return NextResponse.json({ orders }, {
       status: 200

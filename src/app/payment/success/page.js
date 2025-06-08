@@ -7,7 +7,7 @@ import { useCart } from "@/contexts/CartContext";
 export default function PaymentSuccessPage() {
   const router = useRouter();
   const { showToast } = useToast();
-  const { clearCart } = useCart();
+  const { clearCart } = useCart() || {};
 
   useEffect(() => {
     clearCart();

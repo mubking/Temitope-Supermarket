@@ -8,7 +8,7 @@ import Footer from "../components/Footer";
 import CreditApplicationForm from "../components/CreditApplicationForm";
 
 const CreditApplication = () => {
-  const { data: session } = useSession();
+  const { data: session } = useSession() || {};
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
 

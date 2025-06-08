@@ -9,7 +9,7 @@ import { useCart } from '@/contexts/CartContext';
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const rawQuery = searchParams.get('q') || '';
-  const { addToCart } = useCart();
+  const { addToCart } = useCart() || {};
 
   const [query, setQuery] = useState(rawQuery);
   const [results, setResults] = useState([]);

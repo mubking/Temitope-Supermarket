@@ -2,14 +2,23 @@
 import AdminSidebar from "@/components/AdminSidebar";
 import { useEffect, useState } from "react";
 import { FaBox, FaPhone, FaMapMarkerAlt, FaClock, FaTruck } from "react-icons/fa";
+import { useSession } from "next-auth/react";
 
 export default function OrderList() {
   const [orders, setOrders] = useState([]);
+  const { data: session } = useSession() || {};
+  const isAdmin = session?.user?.isAdmin;
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await fetch("/api/admin/orders");
+        const res = await fetch("/api/admin/orders", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "isAdmin": `${isAdmin}`, // Assuming you have a token in session
+          },
+        });
         const data = await res.json();
         if (Array.isArray(data.orders)) {
           setOrders(data.orders);
@@ -29,7 +38,7 @@ export default function OrderList() {
     try {
       const res = await fetch(`/api/admin/orders/${orderId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", x },
         body: JSON.stringify({ status: newStatus }),
       });
 

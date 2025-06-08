@@ -1,7 +1,7 @@
-const payWithPaystack = async () => {
+const payWithPaystack = async (email) => {
   const orderRes = await fetch("/api/orders", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "email": `${email}` },
     body: JSON.stringify(payload),
   });
   const order = await orderRes.json();

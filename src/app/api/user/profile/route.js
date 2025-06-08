@@ -1,12 +1,10 @@
 import { connectToDB } from "@/utils/db";
 import User from "@/models/User";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions"; 
 
 export async function PUT(req) {
-  const session = await getServerSession(authOptions);
+  const session = await req.headers.get("session"); 
 
-  if (!session?.user?.email) {
+  if (!session) {
     console.log("No session or email");
     return new Response("Unauthorized", { status: 401 });
   }
@@ -20,7 +18,7 @@ export async function PUT(req) {
   await connectToDB();
 
   const updatedUser = await User.findOneAndUpdate(
-    { email: session.user.email },
+    { email: session },
     { $set: { firstName, lastName } },
     { new: true }
   );

@@ -21,7 +21,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession() || {};
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("orders");
   const pathname = usePathname();

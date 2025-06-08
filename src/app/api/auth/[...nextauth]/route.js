@@ -1,18 +1,13 @@
-// import NextAuth from "next-auth";
-// import { authOptions } from "@/lib/authOptions";
-
-// const handler = async (req, res) => {
-//   return NextAuth(req, res, authOptions);
-// };
-
-// export { handler as GET, handler as POST };
-
-
 import NextAuth from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { authOptions } from "@/lib/authOptions"; // ✅ Correct import from shared config
 
-// ✅ App Router-style handlers
-const handler = NextAuth(authOptions);
+// const handler = NextAuth(authOptions);
+// export { handler as GET, handler as POST };
+export const GET = NextAuth(authOptions);
+export const POST = NextAuth(authOptions);
 
-export const GET = handler;
-export const POST = handler;
+
+
+
+// import { handlers } from "@/auth/auth";
+// export const { GET, POST } = handlers;
