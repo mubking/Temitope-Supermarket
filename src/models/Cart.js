@@ -11,7 +11,8 @@ const CartItemSchema = new mongoose.Schema({
 const CartSchema = new mongoose.Schema(
   {
     userId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId, // ✅ now matches session.user.id
+      ref: "User",
       required: true,
       unique: true,
     },

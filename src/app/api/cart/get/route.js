@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions"; 
 import { connectToDB } from "@/utils/db";
 import Cart from "@/models/Cart"; // make sure you have a Cart model
 
 export async function GET(req) {
   await connectToDB();
 
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(req, authOptions);
 
   if (!session?.user) {
     return NextResponse.json({ message: "Not authenticated" }, { status: 401 });

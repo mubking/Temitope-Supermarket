@@ -1,7 +1,7 @@
 import { connectToDB } from "@/utils/db";
 import Order from "@/models/Order";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions"; 
 
 export async function GET(req) {
   const session = await getServerSession(authOptions);
