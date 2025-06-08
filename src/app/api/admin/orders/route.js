@@ -9,7 +9,6 @@ export async function GET(req) {
   try {
     await connectToDB();
     const session = await getServerSession(authOptions);
-
     if (!session?.user?.isAdmin) {
       return NextResponse.json({ message: "Unauthorized" }, {
         status: 403,
