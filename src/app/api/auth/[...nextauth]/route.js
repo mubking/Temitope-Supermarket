@@ -1,13 +1,14 @@
+export const runtime = "nodejs"; // prevent Edge runtime crash
+
 import NextAuth from "next-auth";
-import { authOptions } from "@/lib/authOptions"; // ✅ Correct import from shared config
+import { getAuthOptions } from "@/lib/authOptions";
 
-// const handler = NextAuth(authOptions);
-// export { handler as GET, handler as POST };
-export const GET = NextAuth(authOptions);
-export const POST = NextAuth(authOptions);
+export async function GET(req, res) {
+  const authOptions = await getAuthOptions();
+  return NextAuth(authOptions)(req, res);
+}
 
-
-
-
-// import { handlers } from "@/auth/auth";
-// export const { GET, POST } = handlers;
+export async function POST(req, res) {
+  const authOptions = await getAuthOptions();
+  return NextAuth(authOptions)(req, res);
+}

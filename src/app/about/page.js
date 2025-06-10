@@ -1,4 +1,3 @@
-import CreditApplication from '@/pages/CreditApplication'
 import React from 'react'
 
 function page() {

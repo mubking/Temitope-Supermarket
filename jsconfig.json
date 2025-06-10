@@ -8,7 +8,7 @@
     "baseUrl": "src", // ✅ This is required for path aliases to work
     "paths": {
       "@/*": ["*"]
-    }
+    } 
   },
   "include": [
     "next-env.d.ts",
