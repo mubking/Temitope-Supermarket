@@ -1,16 +1,15 @@
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
-  const session = await req.headers.get("session"); 
-
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   try {
+    // Optional: protect route using a custom header or token
+    const sessionToken = req.headers.get("session");
+    if (!sessionToken) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { email, amount, metadata } = await req.json();
 
-    // ✅ Step 2: Call Paystack
     const paystackRes = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
       headers: {
@@ -27,14 +26,18 @@ export async function POST(req) {
 
     const data = await paystackRes.json();
 
-    if (!paystackRes.ok) {
-      console.error("Paystack Error:", data);
-      return NextResponse.json({ error: "Paystack initialization failed" }, { status: 500 });
+    if (!paystackRes.ok || !data.status) {
+      console.error("❌ Paystack Error:", data);
+      return NextResponse.json({ error: "Paystack failed to initialize" }, { status: 500 });
     }
 
-    return NextResponse.json(data.data); // ✅ return authorization_url and reference
-  } catch (err) {
-    console.error("Server Error:", err);
+    // ✅ Return only what the frontend needs (e.g. authorization_url)
+    return NextResponse.json({
+      authorization_url: data.data.authorization_url,
+      reference: data.data.reference,
+    });
+  } catch (error) {
+    console.error("❌ Payment init error:", error.message || error);
     return NextResponse.json({ error: "Payment initialization failed" }, { status: 500 });
   }
 }
