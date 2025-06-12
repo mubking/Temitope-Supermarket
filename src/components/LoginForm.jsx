@@ -44,10 +44,13 @@ const LoginForm = () => {
       return;
     }
 
+    // Add slight delay to allow session propagation
+    await new Promise(resolve => setTimeout(resolve, 300));
+
     const session = await getSession();
     console.log("✅ Session on PROD:", session);
 
-    if (!session) {
+    if (!session || !session.user) {
       showToast({
         title: "Session Error",
         description: "Login worked, but we couldn’t load your account.",
@@ -62,7 +65,6 @@ const LoginForm = () => {
       description: `Welcome back, ${session.user.firstName || "User"}!`,
       status: "success",
     });
-
 
     if (session.user.isAdmin) {
       router.push("/admin");
