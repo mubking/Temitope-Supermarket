@@ -59,7 +59,7 @@ const { data: session, status } = useSession() || {};
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-4">
           <Link href="/" className="flex items-center">
-            <img src="/Ts logo.png" alt="Logo" className="h-10" />
+            <img src="/tslogo.png" alt="Logo" className="h-10" />
           </Link>
 
           {/* Desktop search */}

@@ -24,20 +24,33 @@ const LoginForm = () => {
     });
 
     if (result?.error) {
+      let errorMessage = "Something went wrong. Try again.";
+
+      if (result.error === "CredentialsSignin") {
+        errorMessage = "Your email or password is not correct.";
+      } else if (result.error === "No user found with that email") {
+        errorMessage = "This account doesn’t exist.";
+      } else if (result.error === "Incorrect password") {
+        errorMessage = "That password is not correct.";
+      }
+
       showToast({
         title: "Login Failed",
-        description: result.error || "Invalid email or password",
+        description: errorMessage,
         status: "error",
       });
+
       setIsLoading(false);
       return;
     }
 
     const session = await getSession();
+    console.log("✅ Session on PROD:", session);
+
     if (!session) {
       showToast({
         title: "Session Error",
-        description: "Could not fetch session",
+        description: "Login worked, but we couldn’t load your account.",
         status: "error",
       });
       setIsLoading(false);
@@ -49,6 +62,7 @@ const LoginForm = () => {
       description: `Welcome back, ${session.user.firstName || "User"}!`,
       status: "success",
     });
+
 
     if (session.user.isAdmin) {
       router.push("/admin");
@@ -101,9 +115,8 @@ const LoginForm = () => {
 
           <button
             type="submit"
-            className={`w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md ${
-              isLoading ? 'opacity-70 cursor-not-allowed' : ''
-            }`}
+            className={`w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md ${isLoading ? 'opacity-70 cursor-not-allowed' : ''
+              }`}
             disabled={isLoading}
           >
             {isLoading ? 'Signing in...' : 'Sign In'}
