@@ -13,16 +13,24 @@ import NewsletterSection from "@/components/NewsletterSection";
 import SpecialOfferBanner from "@/components/SpecialOfferBanner";
 
 function HomePage() {
-  const { data: session, status } = useSession() || {};
+  const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-  const fromPayment = router?.query?.from === "payment";
+    // Only redirect if user is authenticated and not coming from a payment page
+    const fromPayment =
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("from") === "payment";
 
-  if (status === "authenticated" && !fromPayment) {
-    router.push("/dashboard");
-  }
-}, [status, router]);
+    if (status === "authenticated" && !fromPayment) {
+      if (session?.user?.isAdmin) {
+        router.push("/admin");
+      } else {
+        router.push("/dashboard");
+      }
+    }
+  }, [status, session, router]);
+
   return (
     <div>
       <SpecialOfferBanner />

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signIn, getSession } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
 import Footer from './Footer';
 import { useToast } from '../contexts/ToastContext';
 
@@ -25,13 +25,8 @@ const LoginForm = () => {
 
     if (result?.error) {
       let errorMessage = "Something went wrong. Try again.";
-
       if (result.error === "CredentialsSignin") {
         errorMessage = "Your email or password is not correct.";
-      } else if (result.error === "No user found with that email") {
-        errorMessage = "This account doesn’t exist.";
-      } else if (result.error === "Incorrect password") {
-        errorMessage = "That password is not correct.";
       }
 
       showToast({
@@ -44,11 +39,10 @@ const LoginForm = () => {
       return;
     }
 
-    // Add slight delay to allow session propagation
-    await new Promise(resolve => setTimeout(resolve, 300));
-
-    const session = await getSession();
-    console.log("✅ Session on PROD:", session);
+    // ✅ Get fresh session from API directly
+    const res = await fetch("/api/auth/session");
+    const session = await res.json();
+    console.log("✅ Fresh Session on PROD:", session);
 
     if (!session || !session.user) {
       showToast({
@@ -66,6 +60,7 @@ const LoginForm = () => {
       status: "success",
     });
 
+    // ✅ Admin or normal user routing
     if (session.user.isAdmin) {
       router.push("/admin");
     } else {
@@ -117,8 +112,9 @@ const LoginForm = () => {
 
           <button
             type="submit"
-            className={`w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md ${isLoading ? 'opacity-70 cursor-not-allowed' : ''
-              }`}
+            className={`w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md ${
+              isLoading ? 'opacity-70 cursor-not-allowed' : ''
+            }`}
             disabled={isLoading}
           >
             {isLoading ? 'Signing in...' : 'Sign In'}
