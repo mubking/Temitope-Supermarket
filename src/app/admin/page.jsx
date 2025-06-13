@@ -1,13 +1,14 @@
-import AdminDashboard from '@/components/AdminDashboard'
-import React from 'react'
+import AdminDashboard from '@/components/AdminDashboard';
+import React from 'react';
+
 export const dynamic = "force-dynamic";
 
-function page() {
+function AdminPage() {
   return (
     <div>
-        <AdminDashboard/>
+      <AdminDashboard />
     </div>
-  )
+  );
 }
 
-export default page
+export default AdminPage;

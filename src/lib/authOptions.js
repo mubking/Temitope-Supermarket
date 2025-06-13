@@ -20,6 +20,7 @@ export async function getAuthOptions() {
           if (!user) throw new Error("No user found with that email");
           const isValid = await bcrypt.compare(credentials.password, user.password);
           if (!isValid) throw new Error("Incorrect password");
+
           return {
             id: user._id.toString(),
             email: user.email,
@@ -41,9 +42,9 @@ export async function getAuthOptions() {
           token.email = user.email;
           token.firstName = user.firstName;
           token.lastName = user.lastName;
-          token.isAdmin = user.isAdmin;
-          token.referralCode = user.referralCode;
-          token.usedReferralCode = user.usedReferralCode;
+          token.isAdmin = user.isAdmin || false;
+          token.referralCode = user.referralCode || null;
+          token.usedReferralCode = user.usedReferralCode || null;
         }
         return token;
       },
@@ -52,9 +53,9 @@ export async function getAuthOptions() {
         session.user.email = token.email;
         session.user.firstName = token.firstName;
         session.user.lastName = token.lastName;
-        session.user.isAdmin = token.isAdmin;
-        session.user.referralCode = token.referralCode;
-        session.user.usedReferralCode = token.usedReferralCode;
+        session.user.isAdmin = token.isAdmin || false;
+        session.user.referralCode = token.referralCode || null;
+        session.user.usedReferralCode = token.usedReferralCode || null;
         return session;
       },
     },
