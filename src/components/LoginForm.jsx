@@ -41,16 +41,39 @@ const LoginForm = () => {
       return;
     }
 
-    // ✅ Get fresh session from API directly
-    const res = await fetch("/api/auth/session");
-    const session = await res.json();
-    console.log("✅ Fresh Session on PROD:", session);
+    // ✅ Get fresh session from API directly with retry logic
+    let session;
+    let retryCount = 0;
+    const maxRetries = 3;
 
-    if (!session || !session.user) {
-      console.log("⚠️ Session is empty or missing user");
+    while (retryCount < maxRetries) {
+      try {
+        const res = await fetch("/api/auth/session");
+        session = await res.json();
+        console.log(`✅ Fresh Session Attempt ${retryCount + 1}:`, session);
+
+        if (session?.user) {
+          break;
+        }
+        
+        retryCount++;
+        if (retryCount < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s before retry
+        }
+      } catch (error) {
+        console.error("Session fetch error:", error);
+        retryCount++;
+        if (retryCount < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+    }
+
+    if (!session?.user) {
+      console.log("⚠️ Session is empty or missing user after retries");
       showToast({
         title: "Session Error",
-        description: "Login worked, but we couldn’t load your account.",
+        description: "Login worked, but we couldn't load your account. Please try again.",
         status: "error",
       });
       setIsLoading(false);
@@ -63,14 +86,22 @@ const LoginForm = () => {
       status: "success",
     });
 
-    // 💬 FINAL REDIRECT LOG
-    if (session.user.isAdmin) {
+    console.log(session);
+
+
+    // 💬 FINAL REDIRECT LOG with explicit isAdmin check
+    const isAdmin = Boolean(session.user.isAdmin); // Ensure boolean conversion
+    console.log("🔑 User Role:", isAdmin ? "Admin" : "Regular User");
+    
+    if (isAdmin) {
       console.log("➡️ Redirecting to /admin");
       router.push("/admin");
     } else {
       console.log("➡️ Redirecting to /dashboard");
       router.push("/dashboard");
     }
+    
+    setIsLoading(false); // Ensure loading state is reset
   };
 
   return (
@@ -117,9 +148,8 @@ const LoginForm = () => {
 
           <button
             type="submit"
-            className={`w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md ${
-              isLoading ? 'opacity-70 cursor-not-allowed' : ''
-            }`}
+            className={`w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md ${isLoading ? 'opacity-70 cursor-not-allowed' : ''
+              }`}
             disabled={isLoading}
           >
             {isLoading ? 'Signing in...' : 'Sign In'}
