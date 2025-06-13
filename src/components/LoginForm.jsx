@@ -16,6 +16,7 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    console.log("🔐 Attempting login...");
 
     const result = await signIn("credentials", {
       redirect: false,
@@ -24,6 +25,7 @@ const LoginForm = () => {
     });
 
     if (result?.error) {
+      console.log("❌ Login error:", result.error);
       let errorMessage = "Something went wrong. Try again.";
       if (result.error === "CredentialsSignin") {
         errorMessage = "Your email or password is not correct.";
@@ -45,6 +47,7 @@ const LoginForm = () => {
     console.log("✅ Fresh Session on PROD:", session);
 
     if (!session || !session.user) {
+      console.log("⚠️ Session is empty or missing user");
       showToast({
         title: "Session Error",
         description: "Login worked, but we couldn’t load your account.",
@@ -60,10 +63,12 @@ const LoginForm = () => {
       status: "success",
     });
 
-    // ✅ Admin or normal user routing
+    // 💬 FINAL REDIRECT LOG
     if (session.user.isAdmin) {
+      console.log("➡️ Redirecting to /admin");
       router.push("/admin");
     } else {
+      console.log("➡️ Redirecting to /dashboard");
       router.push("/dashboard");
     }
   };
