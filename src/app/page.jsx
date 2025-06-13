@@ -16,15 +16,20 @@ export default function HomePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  useEffect(() => {
-    if (status === "authenticated") {
-      if (session?.user?.isAdmin) {
-        router.push("/admin");
-      } else {
-        router.push("/dashboard");
-      }
+useEffect(() => {
+  // ⛔ Avoid running redirect on login page return
+  const onHomepage = window.location.pathname === "/";
+  const fromLogin = document.referrer.includes("/login");
+
+  if (status === "authenticated" && !fromLogin && onHomepage) {
+    if (session?.user?.isAdmin) {
+      router.push("/admin");
+    } else {
+      router.push("/dashboard");
     }
-  }, [status, session, router]);
+  }
+}, [status, session, router]);
+
 
   return (
     <div>
