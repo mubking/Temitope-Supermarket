@@ -1,26 +1,25 @@
-"use client";
-import { useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+'use client';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function RedirectPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "authenticated") {
-      console.log("🧭 Redirecting based on session:", session?.user);
+    if (status === 'authenticated') {
       if (session?.user?.isAdmin) {
-        router.replace("/admin");
+        router.replace('/admin'); // 🚀 Admins go here
       } else {
-        router.replace("/dashboard");
+        router.replace('/dashboard'); // 👥 Users go here
       }
     }
-  }, [status, session, router]);
+  }, [status, session]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center text-gray-600">
-      Redirecting...
+    <div className="w-full h-screen flex items-center justify-center text-gray-600 text-sm">
+      Redirecting to your dashboard...
     </div>
   );
 }

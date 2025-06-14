@@ -79,25 +79,23 @@ const LoginForm = () => {
     }
 
     // 🎉 Show success
+    // 🎉 Show success
     showToast({
       title: "🎉 Login Successful",
       description: `Welcome back, ${session.user.firstName || "User"}!`,
       status: "success",
     });
 
-    // 🔁 Redirect based on role
-    const isAdmin = Boolean(session.user.isAdmin);
-    console.log("🔑 User Role:", isAdmin ? "Admin" : "User");
+    // 🔁 Redirect through universal redirect handler
+    showToast({
+      title: "Redirecting...",
+      description: "Taking you to your dashboard...",
+      status: "info",
+    });
 
-    if (isAdmin) {
-      router.push("/admin");
-    } else {
-      router.push("/dashboard");
-    }
-
+    router.push("/redirect");
     setIsLoading(false);
-  };
-
+  }
   return (
     <>
       <div className="w-full max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
