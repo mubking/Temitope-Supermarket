@@ -41,7 +41,7 @@ const LoginForm = () => {
       return;
     }
 
-    // ✅ Get fresh session from API directly with retry logic
+    // ✅ Retry logic to ensure session is ready
     let session;
     let retryCount = 0;
     const maxRetries = 3;
@@ -50,58 +50,52 @@ const LoginForm = () => {
       try {
         const res = await fetch("/api/auth/session");
         session = await res.json();
-        console.log(`✅ Fresh Session Attempt ${retryCount + 1}:`, session);
+        console.log(`✅ Session Try ${retryCount + 1}:`, session);
 
-        if (session?.user) {
-          break;
-        }
-        
+        if (session?.user) break;
+
         retryCount++;
         if (retryCount < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s before retry
+          await new Promise(res => setTimeout(res, 1000));
         }
-      } catch (error) {
-        console.error("Session fetch error:", error);
+      } catch (err) {
+        console.error("❌ Session fetch failed:", err);
         retryCount++;
         if (retryCount < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(res => setTimeout(res, 1000));
         }
       }
     }
 
     if (!session?.user) {
-      console.log("⚠️ Session is empty or missing user after retries");
+      console.log("⚠️ Session unavailable after retries");
       showToast({
         title: "Session Error",
-        description: "Login worked, but we couldn't load your account. Please try again.",
+        description: "Login worked, but couldn't load your account. Try again.",
         status: "error",
       });
       setIsLoading(false);
       return;
     }
 
+    // 🎉 Show success
     showToast({
       title: "🎉 Login Successful",
       description: `Welcome back, ${session.user.firstName || "User"}!`,
       status: "success",
     });
 
-    console.log(session);
+    // 🔁 Redirect based on role
+    const isAdmin = Boolean(session.user.isAdmin);
+    console.log("🔑 User Role:", isAdmin ? "Admin" : "User");
 
-
-    // 💬 FINAL REDIRECT LOG with explicit isAdmin check
-    const isAdmin = Boolean(session.user.isAdmin); // Ensure boolean conversion
-    console.log("🔑 User Role:", isAdmin ? "Admin" : "Regular User");
-    
     if (isAdmin) {
-      console.log("➡️ Redirecting to /admin");
       router.push("/admin");
     } else {
-      console.log("➡️ Redirecting to /dashboard");
       router.push("/dashboard");
     }
-    
-    setIsLoading(false); // Ensure loading state is reset
+
+    setIsLoading(false);
   };
 
   return (
