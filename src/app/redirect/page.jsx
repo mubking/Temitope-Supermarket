@@ -12,8 +12,15 @@ export default function RedirectPage() {
 
   useEffect(() => {
     const doRedirect = async () => {
+      console.log('🔄 Redirect Check - Status:', status);
+      console.log('👤 Session Data:', session);
+
       if (status === 'authenticated' && session?.user && !hasRedirected) {
-        const isAdmin = session.user.isAdmin;
+        console.log('✅ User authenticated, checking admin status...');
+        
+        // Explicitly check and convert isAdmin to boolean
+        const isAdmin = Boolean(session.user.isAdmin);
+        console.log('🔑 Is Admin?', isAdmin, 'Raw value:', session.user.isAdmin);
 
         showToast({
           title: 'Redirecting...',
@@ -24,8 +31,23 @@ export default function RedirectPage() {
         });
 
         setHasRedirected(true);
-        await new Promise((res) => setTimeout(res, 1000));
-        router.replace(isAdmin ? '/admin' : '/dashboard');
+        
+        // Add a small delay to ensure state updates
+        await new Promise((res) => setTimeout(res, 1500));
+        
+        const targetPath = isAdmin ? '/admin' : '/dashboard';
+        console.log('🎯 Redirecting to:', targetPath);
+        
+        try {
+          router.replace(targetPath);
+        } catch (error) {
+          console.error('❌ Redirect Error:', error);
+          showToast({
+            title: 'Navigation Error',
+            description: 'Failed to redirect. Please try again.',
+            status: 'error',
+          });
+        }
       }
     };
 
