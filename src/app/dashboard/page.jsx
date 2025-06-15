@@ -22,6 +22,13 @@ import { redirect } from "next/navigation";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user?.isAdmin) {
+      router.replace('/admin'); // ✅ Proper way to redirect admin
+    }
+  }, [session, status, router]);
 
   if (status === 'loading') {
     return (
@@ -34,12 +41,9 @@ export default function DashboardPage() {
     );
   }
 
-  // ✅ Block admins from viewing this page
-  if (session?.user?.isAdmin) {
-    return redirect('/admin');
+  if (!session || session.user.isAdmin) {
+    return null; // Block admin until useEffect redirects
   }
-
-  if (!session) return null;
   return (
     <div className="min-h-screen flex flex-col">
       {/* Special Offer Banner */}
