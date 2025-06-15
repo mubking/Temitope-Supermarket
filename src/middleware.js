@@ -5,17 +5,15 @@ export async function middleware(req) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const url = req.nextUrl;
 
-  console.log("MIDDLEWARE TOKEN:", token);
-
+  // ✅ Only protect admin routes
   if (!url.pathname.startsWith("/admin")) return NextResponse.next();
 
-  // 🔧 TEMP: Allow all access for now
-  return NextResponse.next();
+  // ✅ Block if not admin
+  if (!token || !token.isAdmin) {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
 
-  // 🔒 PROPER check (restore later)
-  // if (!token || !token.isAdmin) {
-  //   return NextResponse.redirect(new URL("/", req.url));
-  // }
+  return NextResponse.next();
 }
 
 export const config = {

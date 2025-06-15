@@ -13,15 +13,19 @@ export default function RedirectPage() {
   useEffect(() => {
     const doRedirect = async () => {
       if (status === 'authenticated' && session?.user && !hasRedirected) {
+        const isAdmin = session.user.isAdmin;
+
         showToast({
           title: 'Redirecting...',
-          description: 'Sending you to the admin dashboard.',
+          description: isAdmin
+            ? 'Sending you to the admin dashboard.'
+            : 'Sending you to your user dashboard.',
           status: 'info',
         });
 
         setHasRedirected(true);
-        await new Promise((res) => setTimeout(res, 1500)); // 1.5s delay
-        router.replace('/admin'); // Force admin redirect
+        await new Promise((res) => setTimeout(res, 1000));
+        router.replace(isAdmin ? '/admin' : '/dashboard');
       }
     };
 

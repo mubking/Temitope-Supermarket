@@ -8,13 +8,10 @@ export default function AdminLayout({ children }) {
   const router = useRouter();
 
   useEffect(() => {
-    console.log("Admin Layout Session:", session);
-
-    // 🔧 Temporarily disable admin restriction
-    // if (status === "authenticated" && !session?.user?.isAdmin) {
-    //   router.push("/");
-    // }
-  }, [status, session]);
+    if (status === "authenticated" && !session?.user?.isAdmin) {
+      router.replace("/dashboard");
+    }
+  }, [status, session, router]);
 
   if (status === "loading") return <p>Loading...</p>;
 
