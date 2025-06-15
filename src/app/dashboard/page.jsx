@@ -1,14 +1,12 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-
+import { useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+
+import Link from "next/link";
 import { FaPhoneAlt } from "react-icons/fa";
 import { FaCartArrowDown, FaUser, FaLocationDot } from "react-icons/fa6";
-import { TbLogout2 } from "react-icons/tb";
 import { BsFillCreditCardFill } from "react-icons/bs";
 
 import Footer from "@/components/Footer";
@@ -17,19 +15,20 @@ import HeroSection from "@/components/HeroSection";
 import CategorySection from "@/components/CategorySection";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import DashboardNavbar from "@/components/DashboardNavbar";
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
 
+  // 🔁 Redirect admin if they land here
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.isAdmin) {
-      router.replace('/admin'); // ✅ Proper way to redirect admin
+      router.replace('/admin');
     }
-  }, [session, status, router]);
+  }, [status, session, router]);
 
+  // 🌀 Show loading while session is being fetched
   if (status === 'loading') {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -41,9 +40,8 @@ export default function DashboardPage() {
     );
   }
 
-  if (!session || session.user.isAdmin) {
-    return null; // Block admin until useEffect redirects
-  }
+  // ❌ Block rendering for admin until redirected
+  if (!session || session.user.isAdmin) return null;
   return (
     <div className="min-h-screen flex flex-col">
       {/* Special Offer Banner */}
