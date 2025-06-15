@@ -21,42 +21,25 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession() || {};
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState("orders");
-  const pathname = usePathname();
+  const { data: session, status } = useSession();
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
-    }
-  }, [status, router]);
-
-  if (status === "loading") {
-    if (!session) {
-      return redirect("/login");
-    }
-
-    // If not admin, redirect to home (or user dashboard)
-    if (session.user.role !== "admin") {
-      return redirect("/");
-    }
+  if (status === 'loading') {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
-          <p className="text-lg font-medium text-gray-600">
-            Loading, please wait...
-          </p>
+          <div className="w-12 h-12 border-4 border-blue-500 border-dashed rounded-full animate-spin" />
+          <p className="text-lg font-medium text-gray-600">Loading, please wait...</p>
         </div>
       </div>
     );
   }
 
-  if (!session) {
-    return null;
+  // ✅ Block admins from viewing this page
+  if (session?.user?.isAdmin) {
+    return redirect('/admin');
   }
 
+  if (!session) return null;
   return (
     <div className="min-h-screen flex flex-col">
       {/* Special Offer Banner */}
