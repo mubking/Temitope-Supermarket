@@ -5,8 +5,8 @@ import "./globals.css";
 import Providers from "./providers";
 import Script from "next/script";
 import { useEffect, useState } from "react";
-import AOS from 'aos';
-import 'aos/dist/aos.css';
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,36 +21,9 @@ const geistMono = Geist_Mono({
 export default function RootLayout({ children }) {
   const [isBeamsReady, setBeamsReady] = useState(false);
 
-  // Initialize AOS
+  // Initialize AOS (Animate on Scroll)
   useEffect(() => {
     AOS.init({ once: true });
-  }, []);
-
-  // Register Service Worker and Initialize Beams
-  useEffect(() => {
-    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/service-worker.js")
-        .then(() => {
-          const interval = setInterval(() => {
-            if (window.PusherPushNotifications) {
-              clearInterval(interval);
-              const beamsClient = new window.PusherPushNotifications.Client({
-                instanceId: "f2db54f3-cea2-4b58-aee5-4c6f92cd9250",
-              });
-
-              beamsClient.start()
-                .then(() => beamsClient.addDeviceInterest("admin"))
-                .then(() => console.log("✅ Subscribed to admin notifications"))
-                .catch(console.error);
-            } else {
-              console.warn("⏳ Waiting for Pusher SDK to load...");
-            }
-          }, 500); // Retry every 500ms
-        })
-        .catch(err => {
-          console.error("❌ Service worker registration failed:", err);
-        });
-    }
   }, []);
 
   // Load Tawk.to chat script
@@ -65,7 +38,11 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="en">
-      <head />
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#4caf50" />
+        <link rel="icon" href="/icons/icon-192x192.png" />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Script
           src="https://js.pusher.com/beams/2.1.0/push-notifications-cdn.js"
