@@ -1,14 +1,13 @@
-"use client"
+"use client";
 import { useState, useEffect } from 'react';
 import { useToast } from '../contexts/ToastContext';
 import { useSession } from 'next-auth/react';
-
 
 const CreditApplicationForm = () => {
   const { showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isIDVerified, setIsIDVerified] = useState(false);
-const [verifying, setVerifying] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -26,6 +25,67 @@ const [verifying, setVerifying] = useState(false);
     agreeToTerms: false
   });
 
+  const { data: session } = useSession() || {};
+
+  useEffect(() => {
+    if (session?.user?.email) {
+      setFormData((prev) => ({ ...prev, email: session.user.email }));
+    }
+  }, [session]);
+
+  useEffect(() => {
+    const verifyID = async () => {
+      setVerifying(true);
+      setIsIDVerified(false);
+
+      try {
+        const res = await fetch("/api/mock-verify-id", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            idType: formData.idType,
+            idNumber: formData.idNumber,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (data.verified) {
+          showToast({
+            title: "✅ ID Verified",
+            description: "Your ID has been successfully verified.",
+            status: "success",
+          });
+
+          setFormData((prev) => ({
+            ...prev,
+            firstName: data.data.firstName,
+            lastName: data.data.lastName,
+          }));
+          setIsIDVerified(true);
+        } else {
+          setIsIDVerified(false);
+        }
+      } catch (err) {
+        console.error("Verification error:", err);
+        showToast({
+          title: "Verification Failed",
+          description: "Could not verify your ID. Try again.",
+          status: "error",
+        });
+        setIsIDVerified(false);
+      } finally {
+        setVerifying(false);
+      }
+    };
+
+    if (formData.idNumber.length >= 10 && formData.idType) {
+      verifyID();
+    } else {
+      setIsIDVerified(false);
+    }
+  }, [formData.idNumber, formData.idType]);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
@@ -34,117 +94,91 @@ const [verifying, setVerifying] = useState(false);
     });
   };
 
-const { data: session } = useSession() || {};
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-useEffect(() => {
-  if (session?.user?.email) {
-    setFormData((prev) => ({ ...prev, email: session.user.email }));
-  }
-}, [session]);
+    if (!formData.agreeToTerms) {
+      showToast({
+        title: "Terms Required",
+        description: "Please agree to the terms and conditions.",
+        status: "error",
+      });
+      return;
+    }
 
+    if (isNaN(parseFloat(formData.monthlyIncome))) {
+      showToast({
+        title: "Invalid Income",
+        description: "Monthly income must be a valid number.",
+        status: "error",
+      });
+      return;
+    }
 
-
-useEffect(() => {
-  const verifyID = async () => {
-    setVerifying(true);
-    setIsIDVerified(false);
+    setIsSubmitting(true);
 
     try {
-      const res = await fetch("/api/mock-verify-id", {
+      const res = await fetch("/api/credit-application", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
-          idType: formData.idType,
-          idNumber: formData.idNumber,
+          ...formData,
+          zipCode: parseInt(formData.zipCode),
+          monthlyIncome: parseFloat(formData.monthlyIncome),
         }),
       });
 
-      const data = await res.json();
+      if (res.ok) {
+        showToast({
+          title: "🎉 Application Submitted",
+          description: "Your credit application is now under review.",
+          status: "success",
+        });
 
-      if (data.verified) {
-        showToast("✅ ID verified successfully!", "success");
-        setFormData((prev) => ({
-          ...prev,
-          firstName: data.data.firstName,
-          lastName: data.data.lastName,
-        }));
-        setIsIDVerified(true);
+        setTimeout(() => {
+          showToast({
+            title: "⏳ Still Reviewing",
+            description: "Please wait while our team processes your request.",
+            status: "info",
+          });
+        }, 60000);
+
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: '',
+          address: '',
+          city: '',
+          state: '',
+          zipCode: '',
+          employmentStatus: '',
+          monthlyIncome: '',
+          idType: '',
+          idNumber: '',
+          agreeToTerms: false,
+        });
       } else {
-        setIsIDVerified(false);
+        const errorMsg = await res.text();
+        showToast({
+          title: "Submission Failed",
+          description: errorMsg || "Something went wrong. Try again.",
+          status: "error",
+        });
       }
-    } catch (err) {
-      console.error("Verification error:", err);
-      setIsIDVerified(false);
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      showToast({
+        title: "Error",
+        description: "Something went wrong. Please try again later.",
+        status: "error",
+      });
     } finally {
-      setVerifying(false);
+      setIsSubmitting(false);
     }
   };
-
-  if (formData.idNumber.length >= 10 && formData.idType) {
-    verifyID();
-  } else {
-    setIsIDVerified(false);
-  }
-}, [formData.idNumber, formData.idType]);
-
-
-const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  if (!formData.agreeToTerms) {
-    showToast('Please agree to the terms and conditions', 'error');
-    return;
-  }
-
-  setIsSubmitting(true);
-
-  try {
-    const res = await fetch("/api/credit-application", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    });
-
-    if (res.ok) {
-showToast("🎉 Application submitted successfully! Your request is under review...", "success");
-
-// Optional: remove toast after 60 seconds
-setTimeout(() => {
-  showToast("⏳ Please wait while our team reviews your application...", "info");
-}, 60000);
-
-      // Reset form after successful submission
-      setFormData({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        address: '',
-        city: '',
-        state: '',
-        zipCode: '',
-        employmentStatus: '',
-        monthlyIncome: '',
-        idType: '',
-        idNumber: '',
-        agreeToTerms: false,
-      });
-    } else {
-      const errorMsg = await res.text();
-      showToast(`Failed to submit application: ${errorMsg}`, "error");
-    }
-  } catch (error) {
-    console.error("Unexpected error:", error);
-    showToast("Something went wrong. Please try again later.", "error");
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
-
-
   return (
     <div className="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold text-center mb-6">Credit Application</h1>
@@ -325,7 +359,7 @@ setTimeout(() => {
                 name="monthlyIncome"
                 value={formData.monthlyIncome}
                 onChange={handleChange}
-                placeholder="$"
+                placeholder="  ₦"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />

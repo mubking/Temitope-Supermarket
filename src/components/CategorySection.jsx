@@ -8,6 +8,13 @@ const categories = [
   { id: 4, name: 'Spreads', image: '/placeholder.svg', slug: 'spreads', icon: '🍯' },
   { id: 5, name: 'Infant Formulas', image: '/placeholder.svg', slug: 'infant-formulas', icon: '🍼' },
   { id: 6, name: 'Grains & Cooking Essentials', image: '/placeholder.svg', slug: 'grains-and-oils', icon: '🌾' },
+{
+  id: 6,
+  name: "Body Care & Cosmetics",
+  image: "/cosmetics.jpg", // Replace with your actual image path
+  slug: "body-care",
+  icon: "🌸"
+}
 ];
 
 const CategorySection = () => {

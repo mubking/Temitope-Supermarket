@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import { connectToDB } from "@/utils/db";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
-import { randomBytes } from "crypto"; // ✅ Correct import for server-side
+import { randomBytes } from "crypto";
 
 function generateReferralCode() {
-  return randomBytes(4).toString("hex").toUpperCase(); // e.g. "4F7A2C19"
+  return randomBytes(4).toString("hex").toUpperCase();
 }
 
 export async function POST(req) {
@@ -15,6 +15,15 @@ export async function POST(req) {
 
     const { firstName, lastName, email, password, referralInput } = body;
 
+    // ✅ Basic validation
+    if (!email || !password || !firstName || !lastName) {
+      return new Response(
+        JSON.stringify({ message: "Missing required fields." }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // ✅ Check for duplicate email
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return new Response(
@@ -47,7 +56,16 @@ export async function POST(req) {
       { status: 201, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("❌ Registration error:", error?.message || error);
+
+    // MongoDB specific permission error
+    if (error?.message?.toLowerCase().includes("not authorized") || error?.code === 13) {
+      return new Response(
+        JSON.stringify({ message: "Permission denied - check database user roles." }),
+        { status: 403, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     return new Response(
       JSON.stringify({ message: "Something went wrong during registration." }),
       { status: 500, headers: { "Content-Type": "application/json" } }

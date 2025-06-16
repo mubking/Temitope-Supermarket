@@ -44,7 +44,7 @@ const LoginForm = () => {
 
       console.log("✅ Login successful, fetching session...");
 
-      // ✅ Retry logic to ensure session is ready
+      // Retry logic to ensure session is ready
       let session;
       let retryCount = 0;
       const maxRetries = 3;
@@ -56,17 +56,12 @@ const LoginForm = () => {
           console.log(`✅ Session Try ${retryCount + 1}:`, session);
 
           if (session?.user) {
-            console.log("✅ Session loaded successfully:", {
-              id: session.user.id,
-              email: session.user.email,
-              isAdmin: session.user.isAdmin
-            });
+            console.log("✅ Session loaded:", session.user);
             break;
           }
 
           retryCount++;
           if (retryCount < maxRetries) {
-            console.log(`⏳ Waiting for session... Attempt ${retryCount + 1}/${maxRetries}`);
             await new Promise(res => setTimeout(res, 1000));
           }
         } catch (err) {
@@ -79,7 +74,6 @@ const LoginForm = () => {
       }
 
       if (!session?.user) {
-        console.log("⚠️ Session unavailable after retries");
         showToast({
           title: "Session Error",
           description: "Login worked, but couldn't load your account. Try again.",
@@ -89,22 +83,27 @@ const LoginForm = () => {
         return;
       }
 
-      // 🎉 Show success
+      // 🎉 Success
       showToast({
         title: "🎉 Login Successful",
         description: `Welcome back, ${session.user.firstName || "User"}!`,
         status: "success",
       });
 
-      // 🔁 Redirect through universal redirect handler
-      console.log("🔄 Redirecting to handler...");
       showToast({
         title: "Redirecting...",
         description: "Taking you to your dashboard...",
         status: "info",
       });
 
-      await router.push("/redirect");
+      await new Promise(res => setTimeout(res, 1000)); // Optional delay
+
+      if (session.user.isAdmin) {
+        router.push("/admin");
+      } else {
+        router.push("/dashboard");
+      }
+
     } catch (error) {
       console.error("❌ Unexpected error:", error);
       showToast({
@@ -115,7 +114,7 @@ const LoginForm = () => {
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   return (
     <>

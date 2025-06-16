@@ -6,15 +6,15 @@ const HeroSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const slides = [
-    {
-      id: 1,
-      title: "Fresh Groceries Delivered to Your Door",
-      description:
-        "Shop for fresh fruits, vegetables, dairy, and everyday essentials from the comfort of your home. We deliver quality products right to your doorstep.",
-      image: "/temitope.jpg",
-      buttonText: "Shop Now",
-      buttonLink: "/products",
-    },
+  {
+    id: 1,
+    title: "Fresh Groceries Delivered to Your Door",
+    description:
+      "Shop for top-quality dairy, beverages, grains, and everyday essentials from the comfort of your home. We deliver fast and reliably to your doorstep.",
+    image: "/temitope.jpg",
+    buttonText: "Shop Now",
+    buttonLink: "/products",
+  },
     {
       id: 2,
       title: "Buy Now, Pay Later with Temitope Credit",

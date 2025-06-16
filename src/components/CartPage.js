@@ -49,6 +49,16 @@ const CartPage = () => {
     pickupStore: "",
   });
 
+  useEffect(() => {
+  if (deliveryType === "store") {
+    setForm((prev) => ({
+      ...prev,
+      pickupStore: "No. 10, Opposite Gada Market, Temitope Supermarket, Taiwo Isale",
+    }));
+  }
+}, [deliveryType]);
+
+
   const formatCurrency = (value) => {
     return typeof value === "number" ? `₦${value.toFixed(2)}` : "₦0.00";
   };
@@ -432,68 +442,69 @@ const CartPage = () => {
                       setForm({ ...form, phone: e.target.value })
                     }
                   />
-                  <select
-                    className="border p-2 w-full rounded"
-                    onChange={(e) =>
-                      setForm({ ...form, pickupStore: e.target.value })
-                    }
-                  >
-                    <option>Select Pickup Store</option>
-                    <option>Alpha Store - Ibadan</option>
-                    <option>Beta Store - Lagos</option>
-                  </select>
+               <input
+  type="text"
+  className="border p-2 w-full rounded bg-gray-100 cursor-not-allowed"
+  value="No. 10, Opposite Gada Market, Temitope Supermarket, Taiwo Isale"
+  disabled
+/>
+<input
+  type="hidden"
+  value="No. 10, Opposite Gada Market, Temitope Supermarket, Taiwo Isale"
+  name="pickupStore"
+/>
+
                 </div>
               )}
             </div>
 
-            <div className="p-4 max-w-2xl mx-auto">
-              <h1 className="text-2xl font-bold mb-4">04 / Shipping Option</h1>
-              <div className="mb-2">
-                <label className="block text-gray-700 mb-1">
-                  Select a shipping option
-                </label>
-                <select
-                  className="w-full border rounded p-2"
-                  value={shippingOption}
-                  onChange={(e) => setShippingOption(e.target.value)}
-                >
-                  <option>Scheduled Delivery</option>
-                  <option>Urgent Delivery</option>
-                </select>
-              </div>
-              <p className="text-red-600 text-sm mb-4">
-                Note: Final delivery window depends on time of payment.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div>
-                  <label className="block mb-1 text-gray-700">
-                    Select Date
-                  </label>
-                  <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="w-full border rounded p-2"
-                  />
-                </div>
-                <div>
-                  <label className="block mb-1 text-gray-700">
-                    Select Time
-                  </label>
-                  <select
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    className="w-full border rounded p-2"
-                  >
-                    <option value="">Select Time</option>
-                    <option>10:00 AM - 12:00 PM</option>
-                    <option>12:00 PM - 2:00 PM</option>
-                    <option>2:00 PM - 4:00 PM</option>
-                    <option>4:00 PM - 6:00 PM</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+            {deliveryType === "home" && (
+  <div className="p-4 max-w-2xl mx-auto">
+    <h1 className="text-2xl font-bold mb-4">04 / Shipping Option</h1>
+    <div className="mb-2">
+      <label className="block text-gray-700 mb-1">
+        Select a shipping option
+      </label>
+      <select
+        className="w-full border rounded p-2"
+        value={shippingOption}
+        onChange={(e) => setShippingOption(e.target.value)}
+      >
+        <option>Scheduled Delivery</option>
+        <option>Urgent Delivery</option>
+      </select>
+    </div>
+    <p className="text-red-600 text-sm mb-4">
+      Note: Final delivery window depends on time of payment.
+    </p>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div>
+        <label className="block mb-1 text-gray-700">Select Date</label>
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className="w-full border rounded p-2"
+        />
+      </div>
+      <div>
+        <label className="block mb-1 text-gray-700">Select Time</label>
+        <select
+          value={time}
+          onChange={(e) => setTime(e.target.value)}
+          className="w-full border rounded p-2"
+        >
+          <option value="">Select Time</option>
+          <option>10:00 AM - 12:00 PM</option>
+          <option>12:00 PM - 2:00 PM</option>
+          <option>2:00 PM - 4:00 PM</option>
+          <option>4:00 PM - 6:00 PM</option>
+        </select>
+      </div>
+    </div>
+  </div>
+)}
+
 
             <div className="">
               <h2 className="text-2xl font-bold mb-6">Check Out Details</h2>

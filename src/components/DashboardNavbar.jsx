@@ -47,12 +47,8 @@ const DashboardNavbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center ">
-          <div className="TS">
-          <img src ="/Ts logo.png" alt="" />
-
-          </div>
-            {/* <span className="font-bold text-2xl text-blue-600">Temitope<span className="text-orange-500">Supermarket</span></span> */}
+         <Link href="/" className="flex items-center">
+            <img src="/tslogo.png" alt="Logo" className="h-10" />
           </Link>
 
           {/* Search Bar (Desktop) */}
@@ -78,8 +74,9 @@ const DashboardNavbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link href="/categories" className="text-gray-700 hover:text-blue-600 font-medium">
-              Categories
+            <Link href="/wholesale" className="text-gray-700 hover:text-blue-600 font-medium">
+                Wholesale
+
             </Link>
             <Link href="/deals" className="text-gray-700 hover:text-blue-600 font-medium">
               Deals

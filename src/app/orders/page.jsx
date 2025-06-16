@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import Navbar from "@/components/Navbar";
+import DashboardNavbar from "@/components/DashboardNavbar";
 
 export default function OrderHistoryPage() {
   const { data: session, status } = useSession() || {};
@@ -29,6 +31,7 @@ export default function OrderHistoryPage() {
 
   return (
     <div className="min-h-screen p-4 bg-gray-50">
+      <DashboardNavbar/>
       <h1 className="text-2xl font-semibold mb-6 text-center">My Order History</h1>
 
       {orders.length === 0 ? (

@@ -1,7 +1,14 @@
 import Link from 'next/link';
+import { FaFacebookF, FaInstagram, FaXTwitter, FaWhatsapp } from "react-icons/fa6";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const socialLinks = [
+  { href: "https://facebook.com", icon: <FaFacebookF /> },
+  { href: "https://instagram.com", icon: <FaInstagram /> },
+  { href: "https://x.com", icon: <FaXTwitter /> },
+  { href: "https://wa.me/2349056116119", icon: <FaWhatsapp /> },
+];
 
   return (
     <footer className="bg-gray-800 text-white">
@@ -12,27 +19,28 @@ const Footer = () => {
             <div>
               <h3 className="text-xl font-bold mb-2">Download Our Mobile App</h3>
               <p className="text-gray-300 mb-4">
-                Shop on-the-go with our mobile app. Get exclusive app-only offers and manage your orders easily.
+                Shop smarter soon! Our mobile app is launching soon for a faster, easier shopping experience.
               </p>
               <div className="flex space-x-4">
-                <a href="#" className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded flex items-center">
+                {/* <a href="#" className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded flex items-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
                   Download App
-                </a>
+                </a> */}
+                <span className="inline-block bg-yellow-500 text-white text-sm font-medium px-4 py-2 rounded-md">
+                  🚧 Coming Soon
+                </span>
               </div>
             </div>
-            {/* Social Links */}
-            <div className="flex justify-center md:justify-end space-x-4">
-              {['#', '#', '#', '#'].map((href, i) => (
-                <a key={i} href={href} className="text-gray-300 hover:text-white">
-                  {/* Insert appropriate SVGs here */}
-                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10" />
-                  </svg>
-                </a>
-              ))}
+           {/* Social Links */}
+<div className="flex justify-center md:justify-end space-x-4">
+ {socialLinks.map((item) => (
+  <a key={item.href} href={item.href} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white">
+    <div className="h-6 w-6">{item.icon}</div>
+  </a>
+))}
+
             </div>
           </div>
         </div>
@@ -79,13 +87,14 @@ const Footer = () => {
               <h3 className="text-lg font-semibold mb-4">Contact Info</h3>
               <address className="not-italic text-gray-300 space-y-2">
                 <p className="flex items-center">
-                  📍 No.10 Taiwo Isale Road,ILorin, Kwara State
+                  📍 No.10 Taiwo Isale Road,Ilorin, Kwara State
                 </p>
                 <p className="flex items-center">
-                  📧 info@temitopesupermarket.com
+                  📧                             temitopesupermarket@gmail.com
+
                 </p>
                 <p className="flex items-center">
-                  📞 (123) 456-7890
+                  📞 (234) 905-5611-6119
                 </p>
                 <div className="flex items-center">
                   ⏰
