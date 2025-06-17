@@ -14,7 +14,7 @@ const CreditSection = () => {
           </p>
           
           <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 ">
               <div className="text-center p-4">
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
                   <span className="text-blue-600 font-bold text-xl">1</span>
