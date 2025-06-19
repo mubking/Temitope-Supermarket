@@ -70,9 +70,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
+        
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#4caf50" />
-        <link rel="icon" href="/icons/icon-192x192.png" />
+        <link rel="icon" href="/icons/install-option-svgrepo-com.svg" />
+        
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Script

@@ -9,7 +9,7 @@ const categories = [
   { id: 5, name: 'Infant Formulas', image: '/placeholder.svg', slug: 'infant-formulas', icon: '🍼' },
   { id: 6, name: 'Grains & Cooking Essentials', image: '/placeholder.svg', slug: 'grains-and-oils', icon: '🌾' },
 {
-  id: 6,
+  id: 7,
   name: "Body Care & Cosmetics",
   image: "/cosmetics.jpg", // Replace with your actual image path
   slug: "body-care",

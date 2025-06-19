@@ -7,9 +7,9 @@
   "description": "Your one-stop supermarket app",
   "icons": [
     {
-      "src": "/icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "/icons/install-option-svgrepo-com.svg",
+      "sizes": "any",
+    "type": "image/svg+xml"
     }
   ],
   "theme_color": "#4caf50"

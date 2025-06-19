@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/contexts/ToastContext";
@@ -6,23 +7,33 @@ import { useCart } from "@/contexts/CartContext";
 
 export default function PaymentSuccessPage() {
   const router = useRouter();
-  const { showToast } = useToast();
+  const { showToast } = useToast() || {};
   const { clearCart } = useCart() || {};
 
   useEffect(() => {
-    clearCart();
-    showToast({
-      title: "Payment Successful",
-      description: "Thank you! Your order is being processed.",
-      status: "success",
-      duration: 5000,
-    });
+    console.log("✅ PaymentSuccessPage mounted");
 
-    const timer = setTimeout(() => {
-      router.push("/");
-    }, 4000);
+    try {
+      clearCart?.();
+      console.log("🛒 Cart cleared");
 
-    return () => clearTimeout(timer);
+      showToast?.({
+        title: "Payment Successful",
+        description: "Thank you! Your order is being processed.",
+        status: "success",
+        duration: 5000,
+      });
+      console.log("✅ Toast displayed");
+
+      const timer = setTimeout(() => {
+        console.log("🔁 Redirecting to /");
+        router.push("/");
+      }, 4000);
+
+      return () => clearTimeout(timer);
+    } catch (error) {
+      console.error("❌ Error during payment success flow:", error);
+    }
   }, []);
 
   return (
