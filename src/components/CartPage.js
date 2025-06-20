@@ -29,9 +29,7 @@ const CartPage = () => {
     const fetchAddresses = async () => {
       if (status === "authenticated") {
         const res = await fetch("/api/account/addresses", {
-          headers: {
-            "session": `${email}`, // Ensure email is sent in headers
-          },
+          headers: { "session": `${email}` },
         });
         const data = await res.json();
         setSavedAddresses(data.addresses || []);
@@ -46,18 +44,8 @@ const CartPage = () => {
     city: "",
     landmark: "",
     phone: "",
-    pickupStore: "",
+    pickupStore: "No. 10, Opposite Gada Market, Temitope Supermarket, Taiwo Isale",
   });
-
-  useEffect(() => {
-  if (deliveryType === "store") {
-    setForm((prev) => ({
-      ...prev,
-      pickupStore: "No. 10, Opposite Gada Market, Temitope Supermarket, Taiwo Isale",
-    }));
-  }
-}, [deliveryType]);
-
 
   const formatCurrency = (value) => {
     return typeof value === "number" ? `₦${value.toFixed(2)}` : "₦0.00";
@@ -67,6 +55,7 @@ const CartPage = () => {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
+
   const handleApplyReferral = () => {
     if (!referralInput.trim()) {
       showToast({
@@ -96,7 +85,6 @@ const CartPage = () => {
     });
   };
 
-
   const handleOrderSubmit = async () => {
     if (status === "loading") {
       showToast({
@@ -119,7 +107,6 @@ const CartPage = () => {
       return;
     }
 
-    // ✅ Home Delivery validation
     if (deliveryType === "home") {
       if (
         !form.fullName ||
@@ -132,8 +119,7 @@ const CartPage = () => {
       ) {
         showToast({
           title: "Missing Info",
-          description:
-            "Please fill in all required delivery fields before continuing.",
+          description: "Please fill in all required delivery fields before continuing.",
           status: "error",
           duration: 5000,
         });
@@ -141,13 +127,11 @@ const CartPage = () => {
       }
     }
 
-    // ✅ Collect in Store validation
     if (deliveryType === "store") {
       if (!form.fullName || !form.phone || !form.pickupStore) {
         showToast({
           title: "Missing Info",
-          description:
-            "Please complete pickup information before placing your order.",
+          description: "Please complete pickup information before placing your order.",
           status: "error",
           duration: 5000,
         });
@@ -168,7 +152,7 @@ const CartPage = () => {
           name: item.name,
           price: item.price,
           quantity: item.quantity,
-          image: item.image || "/placeholder.svg", // fallback image
+          image: item.image || "/placeholder.svg",
         })),
         deliveryType,
         deliveryDetails: form,
@@ -179,7 +163,10 @@ const CartPage = () => {
 
       const res = await fetch("/api/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "email": `${email}` },
+        headers: {
+          "Content-Type": "application/json",
+          "email": `${email}`,
+        },
         body: JSON.stringify(payload),
       });
 
@@ -188,7 +175,10 @@ const CartPage = () => {
       if (paymentMethod === "Paystack") {
         const payRes = await fetch("/api/payment/initialize", {
           method: "POST",
-          headers: { "Content-Type": "application/json", "session": `${session?.user?.id}` },
+          headers: {
+            "Content-Type": "application/json",
+            "session": `${session?.user?.id}`,
+          },
           body: JSON.stringify({
             email: form.phone
               ? `${form.phone}@temitopepay.com`
@@ -221,7 +211,7 @@ const CartPage = () => {
       setIsProcessing(false);
     }
   };
-
+  
   const CartItem = ({ item }) => (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 py-4">
       <div className="relative w-full sm:w-24 aspect-square overflow-hidden rounded-lg bg-gray-100">
@@ -442,68 +432,68 @@ const CartPage = () => {
                       setForm({ ...form, phone: e.target.value })
                     }
                   />
-               <input
-  type="text"
-  className="border p-2 w-full rounded bg-gray-100 cursor-not-allowed"
-  value="No. 10, Opposite Gada Market, Temitope Supermarket, Taiwo Isale"
-  disabled
-/>
-<input
-  type="hidden"
-  value="No. 10, Opposite Gada Market, Temitope Supermarket, Taiwo Isale"
-  name="pickupStore"
-/>
+                  <input
+                    type="text"
+                    className="border p-2 w-full rounded bg-gray-100 cursor-not-allowed"
+                    value="No. 10, Opposite Gada Market, Temitope Supermarket, Taiwo Isale"
+                    disabled
+                  />
+                  <input
+                    type="hidden"
+                    value="No. 10, Opposite Gada Market, Temitope Supermarket, Taiwo Isale"
+                    name="pickupStore"
+                  />
 
                 </div>
               )}
             </div>
 
             {deliveryType === "home" && (
-  <div className="p-4 max-w-2xl mx-auto">
-    <h1 className="text-2xl font-bold mb-4">04 / Shipping Option</h1>
-    <div className="mb-2">
-      <label className="block text-gray-700 mb-1">
-        Select a shipping option
-      </label>
-      <select
-        className="w-full border rounded p-2"
-        value={shippingOption}
-        onChange={(e) => setShippingOption(e.target.value)}
-      >
-        <option>Scheduled Delivery</option>
-        <option>Urgent Delivery</option>
-      </select>
-    </div>
-    <p className="text-red-600 text-sm mb-4">
-      Note: Final delivery window depends on time of payment.
-    </p>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-      <div>
-        <label className="block mb-1 text-gray-700">Select Date</label>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="w-full border rounded p-2"
-        />
-      </div>
-      <div>
-        <label className="block mb-1 text-gray-700">Select Time</label>
-        <select
-          value={time}
-          onChange={(e) => setTime(e.target.value)}
-          className="w-full border rounded p-2"
-        >
-          <option value="">Select Time</option>
-          <option>10:00 AM - 12:00 PM</option>
-          <option>12:00 PM - 2:00 PM</option>
-          <option>2:00 PM - 4:00 PM</option>
-          <option>4:00 PM - 6:00 PM</option>
-        </select>
-      </div>
-    </div>
-  </div>
-)}
+              <div className="p-4 max-w-2xl mx-auto">
+                <h1 className="text-2xl font-bold mb-4">04 / Shipping Option</h1>
+                <div className="mb-2">
+                  <label className="block text-gray-700 mb-1">
+                    Select a shipping option
+                  </label>
+                  <select
+                    className="w-full border rounded p-2"
+                    value={shippingOption}
+                    onChange={(e) => setShippingOption(e.target.value)}
+                  >
+                    <option>Scheduled Delivery</option>
+                    <option>Urgent Delivery</option>
+                  </select>
+                </div>
+                <p className="text-red-600 text-sm mb-4">
+                  Note: Final delivery window depends on time of payment.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <label className="block mb-1 text-gray-700">Select Date</label>
+                    <input
+                      type="date"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="w-full border rounded p-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1 text-gray-700">Select Time</label>
+                    <select
+                      value={time}
+                      onChange={(e) => setTime(e.target.value)}
+                      className="w-full border rounded p-2"
+                    >
+                      <option value="">Select Time</option>
+                      <option>10:00 AM - 12:00 PM</option>
+                      <option>12:00 PM - 2:00 PM</option>
+                      <option>2:00 PM - 4:00 PM</option>
+                      <option>4:00 PM - 6:00 PM</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
 
 
             <div className="">

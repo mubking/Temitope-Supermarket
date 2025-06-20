@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 
 export async function POST(req) {
   try {
-    // ✅ Optional route protection (keep or remove based on your logic)
     const sessionToken = req.headers.get("session");
     if (!sessionToken) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -10,9 +9,8 @@ export async function POST(req) {
 
     const { email, amount, metadata } = await req.json();
 
-    // ✅ Use fallback in case NEXT_PUBLIC_BASE_URL is not available (safety net)
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://temitope-supermarket.com";
-    const callback_url = `${baseUrl}/payment/success`;
+    const callback_url = `${baseUrl}/dashboard`; // ✅ Use dashboard or homepage
 
     console.log("🔁 Paystack callback_url:", callback_url);
 
@@ -26,7 +24,7 @@ export async function POST(req) {
         email,
         amount,
         metadata,
-        callback_url, // ✅ Correct callback sent to Paystack
+        callback_url,
       }),
     });
 
@@ -37,7 +35,6 @@ export async function POST(req) {
       return NextResponse.json({ error: "Paystack failed to initialize" }, { status: 500 });
     }
 
-    // ✅ Return only what's needed by the frontend
     return NextResponse.json({
       authorization_url: data.data.authorization_url,
       reference: data.data.reference,
