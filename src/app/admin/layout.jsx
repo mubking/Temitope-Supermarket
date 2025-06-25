@@ -8,6 +8,9 @@ export default function AdminLayout({ children }) {
   const router = useRouter();
 
   useEffect(() => {
+    console.log("✅ [AdminLayout] status:", status);
+    console.log("✅ [AdminLayout] session:", session);
+
     if (status === "authenticated" && !session?.user?.isAdmin) {
       router.replace("/dashboard");
     }

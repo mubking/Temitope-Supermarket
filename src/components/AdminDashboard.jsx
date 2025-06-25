@@ -1,10 +1,10 @@
-"use client"
-import { useState } from 'react';
-import Link from 'next/link';
+"use client";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import AdminSidebar from './AdminSidebar';
+import AdminSidebar from "./AdminSidebar";
+
 const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { data: session, status } = useSession() || {};
@@ -17,6 +17,9 @@ const AdminDashboard = () => {
     }
   }, [session, status, router]);
 
+  console.log("✅ [AdminDashboard] status:", status);
+  console.log("✅ [AdminDashboard] session:", session);
+
   if (status === "loading") {
     return <div>Loading admin dashboard...</div>;
   }
@@ -24,6 +27,8 @@ const AdminDashboard = () => {
   if (!session?.user?.isAdmin) {
     return null;
   }
+
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row">
       {/* Sidebar */}
@@ -287,6 +292,10 @@ const AdminDashboard = () => {
               <a href="#" className="text-blue-600 hover:underline">View All Applications →</a>
             </div>
           </div>
+
+          <pre className="text-xs text-red-500 bg-white p-2">
+  {JSON.stringify(session, null, 2)}
+</pre>
         </main>
       </div>
     </div>
