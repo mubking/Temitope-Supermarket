@@ -29,7 +29,7 @@ const CartPage = () => {
     const fetchAddresses = async () => {
       if (status === "authenticated") {
         const res = await fetch("/api/account/addresses", {
-          headers: { "session": `${email}` },
+          headers: { session: `${email}` },
         });
         const data = await res.json();
         setSavedAddresses(data.addresses || []);
@@ -37,6 +37,91 @@ const CartPage = () => {
     };
     fetchAddresses();
   }, [status]);
+
+  useEffect(() => {
+    const verifyPaystackPayment = async () => {
+      const url = new URL(window.location.href);
+      const reference = url.searchParams.get("reference");
+
+      if (!reference) return;
+
+      // ✅ Wait until session is fully available
+      if (status !== "authenticated" || !session?.user?.id) {
+        console.warn("⏳ Waiting for session to be available...");
+        setTimeout(() => verifyPaystackPayment(), 1000); // Retry after 1 second
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/payment/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reference }),
+        });
+
+        const data = await res.json();
+
+        if (data.status === "success") {
+          console.log("✅ Payment verified. userId:", session?.user?.id);
+
+          try {
+            clearCart();
+
+            const payload = {
+              userId: session.user.id,
+              items: [], // signal to clear DB cart
+            };
+
+            console.log("🔁 Sending to /api/cart/sync:", payload);
+
+          const syncRes = await fetch("/api/cart/sync", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                userId: session.user.id,
+                items: [], // ✅ Explicitly send empty items to sync/clear
+              }),
+            });
+
+            if (!syncRes.ok) {
+              throw new Error(`Cart sync failed: ${syncRes.status}`);
+            }
+
+            const syncJson = await syncRes.json();
+            console.log("🧼 Cart sync response:", syncJson);
+
+            url.searchParams.delete("reference");
+            window.history.replaceState({}, document.title, url.pathname);
+
+            showToast({
+              title: "Payment Successful",
+              description: "Your order was confirmed and your cart is now empty.",
+              status: "success",
+              duration: 5000,
+            });
+
+            // Force redirect to dashboard after successful payment and cart clear
+            router.push('/dashboard');
+          } catch (syncError) {
+            console.error("Failed to sync cart:", syncError);
+            // Still show success message since payment was successful
+            showToast({
+              title: "Payment Successful",
+              description: "Your order was confirmed. Please refresh the page if items are still showing in your cart.",
+              status: "success",
+              duration: 5000,
+            });
+            router.push('/dashboard');
+          }
+        }
+      } catch (err) {
+        console.error("Verification failed", err);
+      }
+    };
+
+    verifyPaystackPayment();
+  }, [status, session]); // 👈 Make sure session is ready before running
+
 
   const [form, setForm] = useState({
     fullName: "",
@@ -161,11 +246,14 @@ const CartPage = () => {
         deliveryTime: time,
       };
 
+      console.log("🛒 Order payload:", payload);
+
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "email": `${email}`,
+          email: `${email}`,
+
         },
         body: JSON.stringify(payload),
       });
@@ -177,7 +265,7 @@ const CartPage = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "session": `${session?.user?.id}`,
+            session: `${session?.user?.id}`,
           },
           body: JSON.stringify({
             email: form.phone
@@ -211,7 +299,8 @@ const CartPage = () => {
       setIsProcessing(false);
     }
   };
-  
+
+
   const CartItem = ({ item }) => (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 py-4">
       <div className="relative w-full sm:w-24 aspect-square overflow-hidden rounded-lg bg-gray-100">

@@ -9,8 +9,11 @@ export async function POST(req) {
 
     const { email, amount, metadata } = await req.json();
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://temitope-supermarket.com";
-const callback_url = `${baseUrl}/payment/success`; // ✅ not dashboard
+const baseUrl =
+  process.env.NODE_ENV === 'development'
+    ? 'http://localhost:3000'
+    : 'https://temitope-supermarket.com';
+  const callback_url = `${baseUrl}/payment/success`; // ✅ not dashboard
 
     console.log("🔁 Paystack callback_url:", callback_url);
 

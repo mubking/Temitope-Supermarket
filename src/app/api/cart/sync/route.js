@@ -1,45 +1,30 @@
-import { connectToDB } from "@/utils/db";
+
+
+import dbConnect from "@/lib/mongodb";
 import Cart from "@/models/Cart";
+import  {NextResponse} from "next/server";
+import { connectToDB } from "@/utils/db";
 
 export async function POST(req) {
-  await connectToDB();
-
   try {
-    const contentType = req.headers.get("content-type");
-    if (!contentType?.includes("application/json")) {
-      return new Response("Invalid content type", { status: 400 });
-    }
+    await connectToDB();
+    const body = await req.json();
 
-    const bodyText = await req.text();
-    if (!bodyText) {
-      return new Response("Empty body", { status: 400 });
-    }
+    console.log("Incoming request to /api/cart/sync");
+    console.log("Parsed body:", body);
 
-    const { cartItems } = JSON.parse(bodyText);
-
-    if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
-      return new Response("Missing cart items", { status: 400 });
-    }
-
-    // You might want to get user ID from session in real use
-    const session = await getServerSession(); // optional if you're using NextAuth
-    const userId = session?.user?.id;
+    const { userId } = body;
 
     if (!userId) {
-      return new Response("User not authenticated", { status: 401 });
+      console.error("❌ Missing userId in body", body);
+      return NextResponse.json({ error: "userId is required" }, { status: 400 });
     }
 
-    await Cart.findOneAndUpdate(
-      { userId },
-      { items: cartItems, updatedAt: new Date() },
-      { upsert: true, new: true }
-    );
+    await Cart.deleteOne({ userId });
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-    });
-  } catch (error) {
-    console.error("sync cart error:", error);
-    return new Response("Invalid JSON or server error", { status: 500 });
+    return NextResponse.json({ message: "Cart cleared" }, { status: 200 });
+  } catch (err) {
+    console.error("Sync error:", err);
+    return NextResponse.json({ error: "Failed to clear cart" }, { status: 500 });
   }
 }

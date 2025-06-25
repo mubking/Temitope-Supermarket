@@ -95,9 +95,25 @@ export const CartProvider = ({ children }) => {
     );
   };
 
-  const clearCart = () => {
-    setCart([]);
-  };
+ const clearCart = async () => {
+  setCart([]); // 1. Clear state
+  localStorage.removeItem("cart"); // 2. Clear from localStorage
+
+  // 3. Clear from DB if user is logged in
+  if (session?.user?.id) {
+    try {
+      await fetch("/api/cart/sync", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: session.user.id }),
+      });
+    } catch (err) {
+      console.error("❌ Failed to clear DB cart:", err);
+    }
+  }
+};
 
   return (
     <CartContext.Provider

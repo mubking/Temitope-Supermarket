@@ -37,7 +37,7 @@ useEffect(() => {
   const paymentStatus = searchParams.get("payment");
 
   if (!hasHandledPayment.current) {
-    if (paymentStatus === "success") {
+if (paymentStatus === "success" && pathname !== "/dashboard") {
       showToast({
         title: "Payment Successful ✅",
         description: "Thank you! We’ve received your payment.",

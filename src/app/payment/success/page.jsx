@@ -1,12 +1,20 @@
-// /app/payment/success/page.js
+"use client";
 
-import PaymentSuccessContent from '@/components/PaymentSuccessContent';
-import { Suspense } from 'react';
+import PaymentVerifier from "@/components/PaymentVerifier";
+import { Suspense } from "react";
 
 export default function PaymentSuccessPage() {
   return (
-    <Suspense fallback={<div>Loading payment confirmation...</div>}>
-      <PaymentSuccessContent/>
-    </Suspense>
+    <div className="min-h-screen flex items-center justify-center text-green-600 font-bold text-lg">
+      <Suspense fallback={<p>Verifying payment...</p>}>
+        {/* <PaymentVerifier /> */}
+
+
+
+
+        <PaymentVerifier/>
+
+      </Suspense>
+    </div>
   );
 }
