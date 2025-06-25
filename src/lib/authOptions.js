@@ -18,6 +18,7 @@ export async function getAuthOptions() {
           await connectToDB();
           const user = await User.findOne({ email: credentials.email });
           if (!user) throw new Error("No user found with that email");
+
           const isValid = await bcrypt.compare(credentials.password, user.password);
           if (!isValid) throw new Error("Incorrect password");
 

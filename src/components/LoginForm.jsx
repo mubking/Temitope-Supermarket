@@ -16,7 +16,6 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    console.log("🔐 Attempting login...");
 
     try {
       const result = await signIn("credentials", {
@@ -26,7 +25,6 @@ const LoginForm = () => {
       });
 
       if (result?.error) {
-        console.log("❌ Login error:", result.error);
         let errorMessage = "Something went wrong. Try again.";
         if (result.error === "CredentialsSignin") {
           errorMessage = "Your email or password is not correct.";
@@ -42,35 +40,18 @@ const LoginForm = () => {
         return;
       }
 
-      console.log("✅ Login successful, fetching session...");
-
-      // Retry logic to ensure session is ready
+      // Wait for session to be available
       let session;
       let retryCount = 0;
       const maxRetries = 3;
 
       while (retryCount < maxRetries) {
-        try {
-          const res = await fetch("/api/auth/session");
-          session = await res.json();
-          console.log(`✅ Session Try ${retryCount + 1}:`, session);
+        const res = await fetch("/api/auth/session");
+        session = await res.json();
 
-          if (session?.user) {
-            console.log("✅ Session loaded:", session.user);
-            break;
-          }
-
-          retryCount++;
-          if (retryCount < maxRetries) {
-            await new Promise(res => setTimeout(res, 1000));
-          }
-        } catch (err) {
-          console.error("❌ Session fetch failed:", err);
-          retryCount++;
-          if (retryCount < maxRetries) {
-            await new Promise(res => setTimeout(res, 1000));
-          }
-        }
+        if (session?.user) break;
+        retryCount++;
+        await new Promise(res => setTimeout(res, 1000));
       }
 
       if (!session?.user) {
@@ -83,25 +64,26 @@ const LoginForm = () => {
         return;
       }
 
-      // 🎉 Success
+      const { isAdmin, firstName } = session.user;
+
       showToast({
         title: "🎉 Login Successful",
-        description: `Welcome back, ${session.user.firstName || "User"}!`,
+        description: `Welcome back, ${firstName || "User"}!`,
         status: "success",
       });
 
       showToast({
         title: "Redirecting...",
-        description: "Taking you to your dashboard...",
+        description: isAdmin ? "Sending you to the Admin Dashboard" : "Sending you to your Dashboard",
         status: "info",
       });
 
-      await new Promise(res => setTimeout(res, 1000)); // Optional delay
-
-      if (session.user.isAdmin) {
-        router.push("/admin");
+      // ✅ Correct role-based redirect
+      await new Promise(res => setTimeout(res, 800));
+      if (isAdmin === true) {
+        router.push("/admin"); // ✅ Send admins to /admin
       } else {
-        router.push("/dashboard");
+        router.push("/dashboard"); // ✅ Send regular users to /dashboard
       }
 
     } catch (error) {
