@@ -70,12 +70,21 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        
-        <link rel="manifest" href="/manifest.json" />
+        <meta charSet="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="theme-color" content="#4caf50" />
+        <meta name="description" content="Buy fresh groceries online and get them delivered fast within Kwara State." />
+
+        <meta property="og:title" content="Temitope Supermarket" />
+        <meta property="og:description" content="Fresh groceries delivered to your door" />
+        <meta property="og:image" content="/tslogo.png" />
+        <meta property="og:url" content="https://www.temitope-supermarket.com" />
+        <meta property="og:type" content="website" />
+
         <link rel="icon" href="/icons/install-option-svgrepo-com.svg" />
-        
+        <link rel="manifest" href="/manifest.json" />
       </head>
+
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Script
           src="https://js.pusher.com/beams/2.1.0/push-notifications-cdn.js"
