@@ -8,7 +8,17 @@ const nextConfig = {
     NEXTAUTH_URL:
       process.env.NODE_ENV === 'development'
         ? 'http://localhost:3000'
-        : 'https://temitope-supermarket.com',
+        : 'https://www.temitope-supermarket.com', // ✅ use www here
+  },
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'temitope-supermarket.com' }],
+        permanent: true,
+        destination: 'https://www.temitope-supermarket.com/:path*', // ✅ redirect to www
+      },
+    ];
   },
 };
 
