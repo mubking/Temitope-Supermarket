@@ -8,6 +8,8 @@ export async function middleware(req) {
   // ✅ Optional: Debug logging for production diagnosis
   console.log("🛡️ Middleware: Path =", url.pathname);
   console.log("🛡️ Middleware: Token =", token);
+  console.log("🛡️ Cookie header:", req.headers.get("cookie"));
+
 
   if (!url.pathname.startsWith("/admin")) return NextResponse.next();
 
