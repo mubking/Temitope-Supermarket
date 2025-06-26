@@ -1,4 +1,5 @@
-import AdminDashboard from '@/components/AdminDashboard';
+// import AdminDashboard from '@/components/AdminDashboard';
+import HeroSection from '@/components/HeroSection';
 import React from 'react';
 
 export const dynamic = "force-dynamic";
@@ -7,7 +8,8 @@ export const dynamic = "force-dynamic";
 function AdminPage() {
   return (
     <div>
-      <AdminDashboard />
+      {/* <AdminDashbo/>ard /> */}
+      <HeroSection/>
     </div>
   );
 }
