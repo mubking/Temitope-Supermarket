@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 import Footer from './Footer';
 import { useToast } from '../contexts/ToastContext';
 
@@ -40,29 +40,27 @@ const LoginForm = () => {
         return;
       }
 
-      // Wait for session to be available
-      let session;
-      let retryCount = 0;
-      const maxRetries = 3;
+      // ✅ Wait for session using next-auth's built-in getSession
+    // ✅ Retry getSession if session not available yet
+const maxRetries = 3;
+let session = null;
 
-      while (retryCount < maxRetries) {
-        const res = await fetch("/api/auth/session");
-        session = await res.json();
+for (let attempt = 0; attempt < maxRetries; attempt++) {
+  session = await getSession();
+  if (session?.user) break;
+  await new Promise(res => setTimeout(res, 500)); // backoff between retries
+}
 
-        if (session?.user) break;
-        retryCount++;
-        await new Promise(res => setTimeout(res, 1000));
-      }
+if (!session?.user) {
+  showToast({
+    title: "Session Error",
+    description: "Login succeeded, but we couldn't verify your session. Please try again.",
+    status: "error",
+  });
+  setIsLoading(false);
+  return;
+}
 
-      if (!session?.user) {
-        showToast({
-          title: "Session Error",
-          description: "Login worked, but couldn't load your account. Try again.",
-          status: "error",
-        });
-        setIsLoading(false);
-        return;
-      }
 
       const { isAdmin, firstName } = session.user;
 
@@ -74,17 +72,16 @@ const LoginForm = () => {
 
       showToast({
         title: "Redirecting...",
-        description: isAdmin ? "Sending you to the Admin Dashboard" : "Sending you to your Dashboard",
+        description: isAdmin
+          ? "Sending you to the Admin Dashboard"
+          : "Sending you to your Dashboard",
         status: "info",
       });
 
-      // ✅ Correct role-based redirect
       await new Promise(res => setTimeout(res, 800));
-      if (isAdmin === true) {
-        router.push("/admin"); // ✅ Send admins to /admin
-      } else {
-        router.push("/dashboard"); // ✅ Send regular users to /dashboard
-      }
+
+      // ✅ Role-based redirect
+      router.push(isAdmin ? "/admin" : "/dashboard");
 
     } catch (error) {
       console.error("❌ Unexpected error:", error);
