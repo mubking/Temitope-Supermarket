@@ -7,6 +7,7 @@ export async function getAuthOptions() {
 
   return {
     secret: process.env.NEXTAUTH_SECRET,
+    debug: process.env.NODE_ENV === "development", // ✅ Show helpful logs in dev
     providers: [
       CredentialsProvider({
         name: "Credentials",
@@ -27,7 +28,7 @@ export async function getAuthOptions() {
             email: user.email,
             firstName: user.firstName || "",
             lastName: user.lastName || "",
-            isAdmin: user.isAdmin || false,
+            isAdmin: Boolean(user.isAdmin), // ✅ Ensure boolean type
             referralCode: user.referralCode || null,
             usedReferralCode: user.usedReferralCode || null,
           };
@@ -43,20 +44,22 @@ export async function getAuthOptions() {
           token.email = user.email;
           token.firstName = user.firstName;
           token.lastName = user.lastName;
-          token.isAdmin = user.isAdmin || false;
+          token.isAdmin = Boolean(user.isAdmin); // ✅ Ensures token isAdmin is always boolean
           token.referralCode = user.referralCode || null;
           token.usedReferralCode = user.usedReferralCode || null;
         }
         return token;
       },
       async session({ session, token }) {
-        session.user.id = token.id;
-        session.user.email = token.email;
-        session.user.firstName = token.firstName;
-        session.user.lastName = token.lastName;
-        session.user.isAdmin = token.isAdmin || false;
-        session.user.referralCode = token.referralCode || null;
-        session.user.usedReferralCode = token.usedReferralCode || null;
+        session.user = {
+          id: token.id,
+          email: token.email,
+          firstName: token.firstName,
+          lastName: token.lastName,
+          isAdmin: Boolean(token.isAdmin), // ✅ Ensure boolean in session
+          referralCode: token.referralCode || null,
+          usedReferralCode: token.usedReferralCode || null,
+        };
         return session;
       },
     },
