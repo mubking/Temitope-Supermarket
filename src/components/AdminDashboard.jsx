@@ -292,9 +292,7 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <pre className="text-xs text-red-500 bg-white p-2">
-  {JSON.stringify(session, null, 2)}
-</pre>
+
         </main>
       </div>
     </div>

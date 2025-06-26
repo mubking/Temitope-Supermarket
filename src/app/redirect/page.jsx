@@ -31,7 +31,6 @@ export default function RedirectPage() {
         if (status === 'authenticated' && session?.user && !hasRedirected) {
           console.log('✅ User authenticated, checking admin status...');
           
-          // Explicitly check and convert isAdmin to boolean
           const isAdmin = Boolean(session.user.isAdmin);
           console.log('🔑 Is Admin?', isAdmin, 'Raw value:', session.user.isAdmin);
           console.log('📦 Full session:', JSON.stringify(session, null, 2));
@@ -46,12 +45,12 @@ export default function RedirectPage() {
 
           setHasRedirected(true);
           
-          // Add a longer delay to ensure state updates
           await new Promise((res) => setTimeout(res, 2000));
-          
-          const targetPath = isAdmin ? '/admin' : '/dashboard';
+
+          // ✅ Updated admin target path
+          const targetPath = isAdmin ? '/admin/dashboard' : '/dashboard';
           console.log('🎯 Redirecting to:', targetPath);
-          
+
           try {
             await router.replace(targetPath);
           } catch (error) {
