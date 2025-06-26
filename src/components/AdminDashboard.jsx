@@ -11,14 +11,14 @@ const AdminDashboard = () => {
   const router = useRouter();
 
   useEffect(() => {
+    console.log("✅ [AdminDashboard] status:", status);
+    console.log("✅ [AdminDashboard] session:", session);
+
     if (status === "loading") return;
     if (!session || !session.user?.isAdmin) {
       router.push("/"); // Redirect non-admins
     }
   }, [session, status, router]);
-
-  console.log("✅ [AdminDashboard] status:", status);
-  console.log("✅ [AdminDashboard] session:", session);
 
   if (status === "loading") {
     return <div>Loading admin dashboard...</div>;
@@ -27,7 +27,6 @@ const AdminDashboard = () => {
   if (!session?.user?.isAdmin) {
     return null;
   }
-
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row">
