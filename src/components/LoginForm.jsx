@@ -81,7 +81,7 @@ if (!session?.user) {
       await new Promise(res => setTimeout(res, 800));
 
       // ✅ Role-based redirect
-      router.push(isAdmin ? "/admin" : "/dashboard");
+router.push(isAdmin ? "/admin/dashboard" : "/dashboard");
 
     } catch (error) {
       console.error("❌ Unexpected error:", error);

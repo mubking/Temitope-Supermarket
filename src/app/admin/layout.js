@@ -1,22 +1,11 @@
-// src/app/admin/layout.js
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
-import { getSafeAuthOptions } from "@/lib/auth"; // ✅ use the re-export wrapper
+'use client';
 
-export default async function AdminLayout({ children }) {
-  const authOptions = await getSafeAuthOptions(); // ✅ safely get options
-  const session = await getServerSession(authOptions);
+import { ToastProvider } from "@/contexts/ToastContext"; // ✅ import provider
 
-  if (!session || !session.user?.isAdmin) {
-    redirect("/login");
-  }
-
+export default function AdminLayout({ children }) {
   return (
-    <div className="p-4">
-      <pre className="text-xs text-green-700 bg-green-100 p-2 mb-2">
-        ✅ Admin session: {JSON.stringify(session, null, 2)}
-      </pre>
+    <ToastProvider>
       {children}
-    </div>
+    </ToastProvider>
   );
 }
