@@ -2,18 +2,9 @@
 import NextAuth from "next-auth";
 import { getAuthOptions } from "@/lib/authOptions";
 
-export const handler = async (req, res) => {
-  try {
-    console.log("🔐 Fetching auth options...");
-    const authOptions = await getAuthOptions();
-
-    console.log("✅ Auth options fetched");
-    const nextAuthHandler = NextAuth(authOptions);
-    return nextAuthHandler(req, res);
-  } catch (error) {
-    console.error("🔥 AUTH ROUTE ERROR:", error);
-    return new Response("Internal Server Error", { status: 500 });
-  }
+const handler = async (...args) => {
+  const authOptions = await getAuthOptions();
+  return NextAuth(authOptions)(...args); // ✅ correct usage in App Router
 };
 
 export const GET = handler;
