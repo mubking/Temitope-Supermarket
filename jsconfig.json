@@ -5,10 +5,10 @@
     "allowJs": true,
     "checkJs": false,
     "jsx": "react-jsx",
-    "baseUrl": "src", // ✅ This is required for path aliases to work
+    "baseUrl": "src",
     "paths": {
       "@/*": ["*"]
-    } 
+    }
   },
   "include": [
     "next-env.d.ts",

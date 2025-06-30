@@ -1,8 +1,6 @@
-
-
 import dbConnect from "@/lib/mongodb";
 import Cart from "@/models/Cart";
-import  {NextResponse} from "next/server";
+import { NextResponse } from "next/server";
 import { connectToDB } from "@/utils/db";
 
 export async function POST(req) {
@@ -20,6 +18,9 @@ export async function POST(req) {
       return NextResponse.json({ error: "userId is required" }, { status: 400 });
     }
 
+    // Optional: log item count if needed
+    console.log(`Clearing cart for userId: ${userId}`);
+
     await Cart.deleteOne({ userId });
 
     return NextResponse.json({ message: "Cart cleared" }, { status: 200 });
@@ -28,3 +29,4 @@ export async function POST(req) {
     return NextResponse.json({ error: "Failed to clear cart" }, { status: 500 });
   }
 }
+  

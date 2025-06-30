@@ -2,7 +2,7 @@ import { connectToDB } from "@/utils/db";
 import Order from "@/models/Order";
 
 export async function POST(req) {
-  const email = req.headers.get("email");
+  const email = req.headers.get("session");
 
   if (!email) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {

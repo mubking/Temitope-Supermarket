@@ -39,7 +39,7 @@ export default function PaymentVerifier() {
 
           router.replace("/dashboard");
         } else {
-          router.replace("/cart");
+          // router.replace("/cart");
         }
       } catch (err) {
         console.error("Verification error:", err);

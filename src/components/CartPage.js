@@ -1,3 +1,4 @@
+// app/cart/page.jsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -8,10 +9,14 @@ import { CgDanger } from "react-icons/cg";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import CartItem from "@/components/CartItem";
+import DeliveryForm from "@/components/DeliveryForm";
+import PaymentMethodSelector from "@/components/PaymentMethodSelector";
+import SummarySection from "@/components/SummarySection";
 
 const CartPage = () => {
-  const { data: session, status } = useSession() || {};
-  const { cart, removeFromCart, updateQuantity, clearCart } = useCart() || {};
+  const { data: session, status } = useSession();
+  const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
   const { showToast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [deliveryType, setDeliveryType] = useState("home");
@@ -24,104 +29,6 @@ const CartPage = () => {
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
   const email = session?.user?.email || "";
-
-  useEffect(() => {
-    const fetchAddresses = async () => {
-      if (status === "authenticated") {
-        const res = await fetch("/api/account/addresses", {
-          headers: { session: `${email}` },
-        });
-        const data = await res.json();
-        setSavedAddresses(data.addresses || []);
-      }
-    };
-    fetchAddresses();
-  }, [status]);
-
-  useEffect(() => {
-    const verifyPaystackPayment = async () => {
-      const url = new URL(window.location.href);
-      const reference = url.searchParams.get("reference");
-
-      if (!reference) return;
-
-      // ✅ Wait until session is fully available
-      if (status !== "authenticated" || !session?.user?.id) {
-        console.warn("⏳ Waiting for session to be available...");
-        setTimeout(() => verifyPaystackPayment(), 1000); // Retry after 1 second
-        return;
-      }
-
-      try {
-        const res = await fetch("/api/payment/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reference }),
-        });
-
-        const data = await res.json();
-
-        if (data.status === "success") {
-          console.log("✅ Payment verified. userId:", session?.user?.id);
-
-          try {
-            clearCart();
-
-            const payload = {
-              userId: session.user.id,
-              items: [], // signal to clear DB cart
-            };
-
-            console.log("🔁 Sending to /api/cart/sync:", payload);
-
-          const syncRes = await fetch("/api/cart/sync", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                userId: session.user.id,
-                items: [], // ✅ Explicitly send empty items to sync/clear
-              }),
-            });
-
-            if (!syncRes.ok) {
-              throw new Error(`Cart sync failed: ${syncRes.status}`);
-            }
-
-            const syncJson = await syncRes.json();
-            console.log("🧼 Cart sync response:", syncJson);
-
-            url.searchParams.delete("reference");
-            window.history.replaceState({}, document.title, url.pathname);
-
-            showToast({
-              title: "Payment Successful",
-              description: "Your order was confirmed and your cart is now empty.",
-              status: "success",
-              duration: 5000,
-            });
-
-            // Force redirect to dashboard after successful payment and cart clear
-            router.push('/dashboard');
-          } catch (syncError) {
-            console.error("Failed to sync cart:", syncError);
-            // Still show success message since payment was successful
-            showToast({
-              title: "Payment Successful",
-              description: "Your order was confirmed. Please refresh the page if items are still showing in your cart.",
-              status: "success",
-              duration: 5000,
-            });
-            router.push('/dashboard');
-          }
-        }
-      } catch (err) {
-        console.error("Verification failed", err);
-      }
-    };
-
-    verifyPaystackPayment();
-  }, [status, session]); // 👈 Make sure session is ready before running
-
 
   const [form, setForm] = useState({
     fullName: "",
@@ -141,6 +48,19 @@ const CartPage = () => {
     0
   );
 
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      if (status === "authenticated") {
+        const res = await fetch("/api/account/addresses", {
+          headers: { session: `${email}` },
+        });
+        const data = await res.json();
+        setSavedAddresses(data.addresses || []);
+      }
+    };
+    fetchAddresses();
+  }, [status]);
+
   const handleApplyReferral = () => {
     if (!referralInput.trim()) {
       showToast({
@@ -151,7 +71,6 @@ const CartPage = () => {
       });
       return;
     }
-
     if (referralInput === session?.user?.referralCode) {
       showToast({
         title: "Invalid Referral",
@@ -161,7 +80,6 @@ const CartPage = () => {
       });
       return;
     }
-
     showToast({
       title: "Referral Saved",
       description: `You applied ${referralInput}`,
@@ -180,7 +98,6 @@ const CartPage = () => {
       });
       return;
     }
-
     if (status !== "authenticated" || !session) {
       showToast({
         title: "Login Required",
@@ -191,37 +108,23 @@ const CartPage = () => {
       router.push("/login");
       return;
     }
-
-    if (deliveryType === "home") {
-      if (
-        !form.fullName ||
-        !form.address ||
-        !form.city ||
-        !form.phone ||
-        !shippingOption ||
-        !date ||
-        !time
-      ) {
-        showToast({
-          title: "Missing Info",
-          description: "Please fill in all required delivery fields before continuing.",
-          status: "error",
-          duration: 5000,
-        });
-        return;
-      }
+    if (deliveryType === "home" && (!form.fullName || !form.address || !form.city || !form.phone || !shippingOption || !date || !time)) {
+      showToast({
+        title: "Missing Info",
+        description: "Please fill in all required delivery fields before continuing.",
+        status: "error",
+        duration: 5000,
+      });
+      return;
     }
-
-    if (deliveryType === "store") {
-      if (!form.fullName || !form.phone || !form.pickupStore) {
-        showToast({
-          title: "Missing Info",
-          description: "Please complete pickup information before placing your order.",
-          status: "error",
-          duration: 5000,
-        });
-        return;
-      }
+    if (deliveryType === "store" && (!form.fullName || !form.phone || !form.pickupStore)) {
+      showToast({
+        title: "Missing Info",
+        description: "Please complete pickup information before placing your order.",
+        status: "error",
+        duration: 5000,
+      });
+      return;
     }
 
     setIsProcessing(true);
@@ -246,19 +149,17 @@ const CartPage = () => {
         deliveryTime: time,
       };
 
-      console.log("🛒 Order payload:", payload);
-
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           email: `${email}`,
-
         },
         body: JSON.stringify(payload),
       });
 
       const order = await res.json();
+      if (!res.ok || !order?._id) throw new Error("Order creation failed or _id is missing");
 
       if (paymentMethod === "Paystack") {
         const payRes = await fetch("/api/payment/initialize", {
@@ -268,16 +169,25 @@ const CartPage = () => {
             session: `${session?.user?.id}`,
           },
           body: JSON.stringify({
-            email: form.phone
-              ? `${form.phone}@temitopepay.com`
-              : "guest@temitopepay.com",
+            email: form.phone ? `${form.phone}@temitopepay.com` : "guest@temitopepay.com",
             amount: calculatedSubtotal * 100,
             metadata: { orderId: order._id },
           }),
         });
 
-        const { authorization_url } = await payRes.json();
-        window.location.href = authorization_url;
+        const payJson = await payRes.json();
+
+        if (!payRes.ok || !payJson?.authorization_url) {
+          showToast({
+            title: "Payment Init Failed",
+            description: payJson?.message || "Could not start payment. Try again.",
+            status: "error",
+            duration: 6000,
+          });
+          return;
+        }
+
+        window.location.href = payJson.authorization_url;
       } else {
         showToast({
           title: "Order Submitted",
@@ -300,53 +210,6 @@ const CartPage = () => {
     }
   };
 
-
-  const CartItem = ({ item }) => (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 py-4">
-      <div className="relative w-full sm:w-24 aspect-square overflow-hidden rounded-lg bg-gray-100">
-        <img
-          src={item.image}
-          alt={item.name}
-          className="object-cover w-full h-full hover:scale-105 transition-transform duration-300"
-        />
-      </div>
-      <div className="flex-1">
-        <h3 className="font-medium text-lg text-gray-900">{item.name}</h3>
-        <p className="text-sm text-gray-500 mt-1">Item ID: {item.id}</p>
-        <div className="mt-3 flex items-center">
-          <span className="font-medium text-lg">
-            {formatCurrency(item.price)}
-          </span>
-        </div>
-      </div>
-      <div className="flex flex-col items-end gap-3 mt-2 sm:mt-0">
-        <div className="flex items-center border border-gray-300 rounded-md">
-          <button
-            onClick={() =>
-              updateQuantity(item.id, Math.max(item.quantity - 1, 1))
-            }
-            className="h-8 w-8"
-          >
-            -
-          </button>
-          <span className="w-10 text-center">{item.quantity}</span>
-          <button
-            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-            className="h-8 w-8"
-          >
-            +
-          </button>
-        </div>
-        <button
-          onClick={() => removeFromCart(item.id)}
-          className="text-red-500 text-sm"
-        >
-          Remove
-        </button>
-      </div>
-    </div>
-  );
-
   return (
     <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen">
       <div className="container max-w-6xl mx-auto px-4 py-10">
@@ -354,53 +217,37 @@ const CartPage = () => {
           <div className="flex-1">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold">Your Cart</h1>
-              <Link href="/" className="text-blue-600 text-sm font-medium">
-                Continue Shopping
-              </Link>
+              <Link href="/" className="text-blue-600 text-sm font-medium">Continue Shopping</Link>
             </div>
 
             <div className="bg-white shadow-sm border-0 overflow-hidden">
               {cart.length === 0 ? (
                 <div className="py-16 text-center">
                   <p className="text-lg text-gray-500">Your cart is empty</p>
-                  <Link href="/" className="mt-4 inline-block text-blue-600">
-                    Start Shopping
-                  </Link>
+                  <Link href="/" className="mt-4 inline-block text-blue-600">Start Shopping</Link>
                 </div>
               ) : (
                 <div className="divide-y divide-gray-100">
                   {cart.map((item) => (
                     <div key={item.id} className="px-6">
-                      <CartItem item={item} />
+                      <CartItem
+                        item={item}
+                        updateQuantity={updateQuantity}
+                        removeFromCart={removeFromCart}
+                        formatCurrency={formatCurrency}
+                      />
                       <div className="border-t border-gray-200" />
                     </div>
                   ))}
                   <div className="p-6 bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div className="flex gap-4">
-                      <input
-                        type="text"
-                        placeholder="Referral Code (optional)"
-                        value={referralInput}
-                        onChange={(e) => setReferralInput(e.target.value)}
-                        className="px-3 py-2 border border-gray-300 rounded-l-md"
-                      />
-                      <button
-                        className="border px-4 py-2"
-                        onClick={handleApplyReferral}
-                      >
-                        Apply
-                      </button>
+                      <input type="text" placeholder="Referral Code (optional)" value={referralInput} onChange={(e) => setReferralInput(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-l-md" />
+                      <button className="border px-4 py-2" onClick={handleApplyReferral}>Apply</button>
                     </div>
-                    <button
-                      onClick={clearCart}
-                      className="text-red-500 border px-4 py-2 border-red-500"
-                    >
-                      Clear Cart
-                    </button>
+                    <button onClick={clearCart} className="text-red-500 border px-4 py-2 border-red-500">Clear Cart</button>
                   </div>
                   <h2 className="text-[red] p-4">
-                    NOTE: You can only redeem coupon code once and not with your
-                    personal code
+                    NOTE: You can only redeem coupon code once and not with your personal code
                   </h2>
                 </div>
               )}
@@ -409,170 +256,31 @@ const CartPage = () => {
             <div className="p-4 max-w-2xl mx-auto">
               <h1 className="text-2xl font-bold mb-4">02 / Delivery Option</h1>
               <div className="flex gap-4 mb-6">
-                <button
-                  className={`px-4 py-2 rounded ${deliveryType === "home"
-                    ? "bg-green-600 text-white"
-                    : "bg-gray-200"
-                    }`}
-                  onClick={() => setDeliveryType("home")}
-                >
-                  Home Delivery
-                </button>
-                <button
-                  className={`px-4 py-2 rounded ${deliveryType === "store"
-                    ? "bg-green-600 text-white"
-                    : "bg-gray-200"
-                    }`}
-                  onClick={() => setDeliveryType("store")}
-                >
-                  Collect in Store
-                </button>
+                <button className={`px-4 py-2 rounded ${deliveryType === "home" ? "bg-green-600 text-white" : "bg-gray-200"}`} onClick={() => setDeliveryType("home")}>Home Delivery</button>
+                <button className={`px-4 py-2 rounded ${deliveryType === "store" ? "bg-green-600 text-white" : "bg-gray-200"}`} onClick={() => setDeliveryType("store")}>Collect in Store</button>
               </div>
-              {deliveryType === "home" ? (
-                <div className="space-y-4">
-                  <input
-                    type="text"
-                    placeholder="Full Name"
-                    className="border p-2 w-full rounded"
-                    value={form.fullName}
-                    onChange={(e) =>
-                      setForm({ ...form, fullName: e.target.value })
-                    }
-                  />
-
-                  {savedAddresses.length > 0 && (
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium mb-1">
-                        Use a Saved Address
-                      </label>
-                      <select
-                        className="w-full border p-2 rounded"
-                        value={selectedAddressId}
-                        onChange={(e) => {
-                          const id = e.target.value;
-                          setSelectedAddressId(id);
-                          const selected = savedAddresses.find((addr) => addr._id === id);
-
-                          if (selected) {
-                            setForm({
-                              ...form,
-                              fullName: selected.fullName,
-                              phone: selected.phone,
-                              address: selected.address,
-                              city: selected.city,
-                              landmark: selected.note || "",
-                            });
-                          }
-                        }}
-                      >
-                        <option value="">Select from saved addresses</option>
-                        {savedAddresses.map((addr) => (
-                          <option key={addr._id} value={addr._id}>
-                            {addr.fullName} — {addr.address}, {addr.city}
-                          </option>
-                        ))}
-                      </select>
-
-                    </div>
-                  )}
-
-                  <input
-                    type="text"
-                    placeholder="Address"
-                    className="border p-2 w-full rounded"
-                    value={form.address}
-                    onChange={(e) =>
-                      setForm({ ...form, address: e.target.value })
-                    }
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="City"
-                    className="border p-2 w-full rounded"
-                    value={form.city}
-                    onChange={(e) => setForm({ ...form, city: e.target.value })}
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="Phone Number"
-                    className="border p-2 w-full rounded"
-                    value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  />
-
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <input
-                    type="text"
-                    placeholder="Full Name"
-                    className="border p-2 w-full rounded"
-                    onChange={(e) =>
-                      setForm({ ...form, fullName: e.target.value })
-                    }
-                  />
-                  <input
-                    type="text"
-                    placeholder="Phone Number"
-                    className="border p-2 w-full rounded"
-                    onChange={(e) =>
-                      setForm({ ...form, phone: e.target.value })
-                    }
-                  />
-                  <input
-                    type="text"
-                    className="border p-2 w-full rounded bg-gray-100 cursor-not-allowed"
-                    value="No. 10, Opposite Gada Market, Temitope Supermarket, Taiwo Isale"
-                    disabled
-                  />
-                  <input
-                    type="hidden"
-                    value="No. 10, Opposite Gada Market, Temitope Supermarket, Taiwo Isale"
-                    name="pickupStore"
-                  />
-
-                </div>
-              )}
+              <DeliveryForm {...{ deliveryType, form, setForm, savedAddresses, selectedAddressId, setSelectedAddressId }} />
             </div>
 
             {deliveryType === "home" && (
               <div className="p-4 max-w-2xl mx-auto">
                 <h1 className="text-2xl font-bold mb-4">04 / Shipping Option</h1>
                 <div className="mb-2">
-                  <label className="block text-gray-700 mb-1">
-                    Select a shipping option
-                  </label>
-                  <select
-                    className="w-full border rounded p-2"
-                    value={shippingOption}
-                    onChange={(e) => setShippingOption(e.target.value)}
-                  >
+                  <label className="block text-gray-700 mb-1">Select a shipping option</label>
+                  <select className="w-full border rounded p-2" value={shippingOption} onChange={(e) => setShippingOption(e.target.value)}>
                     <option>Scheduled Delivery</option>
                     <option>Urgent Delivery</option>
                   </select>
                 </div>
-                <p className="text-red-600 text-sm mb-4">
-                  Note: Final delivery window depends on time of payment.
-                </p>
+                <p className="text-red-600 text-sm mb-4">Note: Final delivery window depends on time of payment.</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <div>
                     <label className="block mb-1 text-gray-700">Select Date</label>
-                    <input
-                      type="date"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      className="w-full border rounded p-2"
-                    />
+                    <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full border rounded p-2" />
                   </div>
                   <div>
                     <label className="block mb-1 text-gray-700">Select Time</label>
-                    <select
-                      value={time}
-                      onChange={(e) => setTime(e.target.value)}
-                      className="w-full border rounded p-2"
-                    >
+                    <select value={time} onChange={(e) => setTime(e.target.value)} className="w-full border rounded p-2">
                       <option value="">Select Time</option>
                       <option>10:00 AM - 12:00 PM</option>
                       <option>12:00 PM - 2:00 PM</option>
@@ -584,102 +292,20 @@ const CartPage = () => {
               </div>
             )}
 
+            <SummarySection {...{ calculatedSubtotal, formatCurrency }} />
+            <div className="mt-4">
+              <PaymentMethodSelector {...{ paymentMethod, setPaymentMethod }} />
+            </div>
 
-            <div className="">
-              <h2 className="text-2xl font-bold mb-6">Check Out Details</h2>
-              <div className="bg-white shadow-sm border-0 overflow-hidden">
-                <div className="p-6 space-y-4">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span className="font-medium">
-                      {formatCurrency(calculatedSubtotal)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-start">
-                    <span className="text-gray-600">Shipping</span>
-                    <div className="text-right">
-                      <p className="font-medium text-yellow-700">To be confirmed</p>
-                      <a
-                        href={`https://wa.me/2349037352863?text=${encodeURIComponent(
-                          `Hello! I'm placing an order worth ₦${calculatedSubtotal.toLocaleString()} on Temitope Supermarket. Can you please confirm the delivery fee for my location?`
-                        )}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-green-600 text-sm underline mt-1 inline-block"
-                      >
-                        💬 Chat on WhatsApp to confirm
-                      </a>
+            <div className="mt-8">
+              <button className="w-full bg-blue-600 text-white py-2 rounded" onClick={handleOrderSubmit} disabled={isProcessing || cart.length === 0}>
+                {isProcessing ? "Processing..." : `Proceed with ${paymentMethod}`}
+              </button>
+            </div>
 
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Tax</span>
-                    <span className="font-medium">₦0.00</span>
-                  </div>
-                  <div className="border-t border-gray-200" />
-                  <div className="flex justify-between">
-                    <span className="text-lg font-medium">Total</span>
-                    <span className="text-lg font-bold">
-                      {formatCurrency(calculatedSubtotal)}
-                    </span>
-                  </div>
-
-                </div>
-              </div>
-              <div className="mt-4 text-xs text-gray-500">
-                <p>We accept:</p>
-                <div className="flex gap-2 mt-2">
-                  <div className="bg-gray-100 p-1 rounded">
-                    <button
-                      className={`cursor-pointer p-2 ${paymentMethod === "Paystack" ? "bg-blue-200" : ""
-                        }`}
-                      onClick={() => setPaymentMethod("Paystack")}
-                    >
-                      Paystack Checkout
-                    </button>
-                  </div>
-                  <div className="bg-gray-100 p-1 rounded">
-                    <button
-                      className={`cursor-pointer p-2 ${paymentMethod === "Cash on Delivery"
-                        ? "bg-blue-200"
-                        : ""
-                        }`}
-                      onClick={() => setPaymentMethod("Cash on Delivery")}
-                    >
-                      Cash on Delivery
-                    </button>
-                  </div>
-                  <div className="bg-gray-100 p-1 rounded">
-                    <button
-                      className={`cursor-pointer p-2 ${paymentMethod === "Credit" ? "bg-blue-200" : ""
-                        }`}
-                      onClick={() => setPaymentMethod("Credit")}
-                    >
-                      Credit Option
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-8">
-                <button
-                  className="w-full bg-blue-600 text-white py-2 rounded"
-                  onClick={handleOrderSubmit}
-                  disabled={isProcessing || cart.length === 0}
-                >
-                  {isProcessing
-                    ? "Processing..."
-                    : `Proceed with ${paymentMethod}`}
-                </button>
-              </div>
-              <div className="text-center mt-5 bg-[#DFF0D8] justify-center items-center gap-2 text-lg p-4 flex">
-                <CgDanger />
-                <h1>
-                  Please review your order and confirm all quantities before you
-                  pay
-                </h1>
-              </div>
+            <div className="text-center mt-5 bg-[#DFF0D8] justify-center items-center gap-2 text-lg p-4 flex">
+              <CgDanger />
+              <h1>Please review your order and confirm all quantities before you pay</h1>
             </div>
           </div>
         </div>
