@@ -1,26 +1,18 @@
+// src/app/api/auth/[...nextauth]/route.js
 import NextAuth from "next-auth";
-import { getSafeAuthOptions } from "@/lib/auth";
+import { getAuthOptions } from "@/lib/authOptions";
 
-const handler = async (req, res) => {
+export const handler = async (req, res) => {
   try {
-    console.log("📥 Incoming request to /api/auth");
+    console.log("🔐 Fetching auth options...");
+    const authOptions = await getAuthOptions();
 
-    const authOptions = await getSafeAuthOptions();
-    console.log("✅ Auth options loaded");
-
+    console.log("✅ Auth options fetched");
     const nextAuthHandler = NextAuth(authOptions);
     return nextAuthHandler(req, res);
-  } catch (err) {
-    console.error("🔥 AUTH ROUTE ERROR:", {
-      message: err?.message,
-      stack: err?.stack,
-      cause: err?.cause,
-    });
-
-    return new Response("Internal Server Error", {
-      status: 500,
-      headers: { "Content-Type": "text/plain" },
-    });
+  } catch (error) {
+    console.error("🔥 AUTH ROUTE ERROR:", error);
+    return new Response("Internal Server Error", { status: 500 });
   }
 };
 
