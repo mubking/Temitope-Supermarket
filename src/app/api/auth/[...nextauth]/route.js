@@ -1,11 +1,18 @@
-// src/app/api/auth/[...nextauth]/route.js
 import NextAuth from "next-auth";
-import { getAuthOptions } from "@/lib/authOptions";
+import { getAuthOptions } from "../../../../lib/authOptions";
 
-const handler = async (...args) => {
+let handler;
+
+try {
+  console.log("📦 Calling getAuthOptions...");
   const authOptions = await getAuthOptions();
-  return NextAuth(authOptions)(...args); // ✅ correct usage in App Router
-};
+  console.log("✅ Auth options fetched");
 
-export const GET = handler;
-export const POST = handler;
+  handler = NextAuth(authOptions);
+  console.log("✅ NextAuth handler created");
+} catch (error) {
+  console.error("🔥 Failed to setup NextAuth handler:", error);
+  handler = () => new Response("Internal Server Error", { status: 500 });
+}
+
+export { handler as GET, handler as POST };

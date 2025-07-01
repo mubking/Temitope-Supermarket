@@ -3,8 +3,11 @@ import User from "@/models/User";
 import bcrypt from "bcryptjs";
 
 export async function getAuthOptions() {
+  console.log("🛠️ getAuthOptions: Starting setup...");
+
   try {
     const { default: CredentialsProvider } = await import("next-auth/providers/credentials");
+    console.log("✅ CredentialsProvider imported successfully.");
 
     return {
       secret: process.env.NEXTAUTH_SECRET,
@@ -17,13 +20,25 @@ export async function getAuthOptions() {
             password: { label: "Password", type: "password" },
           },
           async authorize(credentials) {
+            console.log("🔐 Authorize: Credentials received:", credentials);
+
             try {
               await connectToDB();
+              console.log("✅ Connected to DB");
+
               const user = await User.findOne({ email: credentials.email });
-              if (!user) return null;
+              if (!user) {
+                console.warn("❗ User not found for email:", credentials.email);
+                return null;
+              }
 
               const isValid = await bcrypt.compare(credentials.password, user.password);
-              if (!isValid) return null;
+              if (!isValid) {
+                console.warn("❗ Invalid password for email:", credentials.email);
+                return null;
+              }
+
+              console.log("✅ User authorized:", user.email);
 
               return {
                 id: user._id.toString(),
@@ -44,7 +59,7 @@ export async function getAuthOptions() {
       session: { strategy: "jwt" },
       pages: {
         signIn: "/login",
-        error: "/login", // fallback to login on error
+        error: "/login",
       },
       callbacks: {
         async jwt({ token, user }) {
