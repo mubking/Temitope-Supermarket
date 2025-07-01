@@ -20,7 +20,7 @@ export async function getAuthOptions() {
             password: { label: "Password", type: "password" },
           },
           async authorize(credentials) {
-            console.log("🔐 Authorize: Starting", credentials);
+            console.log("🔐 Authorize: Credentials received:", credentials);
 
             try {
               await connectToDB();
@@ -28,17 +28,17 @@ export async function getAuthOptions() {
 
               const user = await User.findOne({ email: credentials.email });
               if (!user) {
-                console.warn("❗ User not found:", credentials.email);
+                console.warn("❗ User not found for email:", credentials.email);
                 return null;
               }
 
               const isValid = await bcrypt.compare(credentials.password, user.password);
               if (!isValid) {
-                console.warn("❗ Invalid password for:", credentials.email);
+                console.warn("❗ Invalid password for email:", credentials.email);
                 return null;
               }
 
-              console.log("✅ User authenticated:", user.email);
+              console.log("✅ User authorized:", user.email);
 
               return {
                 id: user._id.toString(),
@@ -50,8 +50,8 @@ export async function getAuthOptions() {
                 usedReferralCode: user.usedReferralCode || null,
               };
             } catch (err) {
-              console.error("❌ authorize() error:", err);
-              throw err;
+              console.error("❌ Error in authorize():", err);
+              return null;
             }
           },
         }),
