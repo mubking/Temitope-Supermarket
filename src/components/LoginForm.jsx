@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signIn, getSession } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
 import Footer from './Footer';
 import { useToast } from '../contexts/ToastContext';
 
@@ -16,83 +16,86 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    console.log("🔐 Attempting login...");
 
-    try {
-      const result = await signIn("credentials", {
-        redirect: false,
-        email,
-        password,
-      });
+    const result = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+    });
 
-      if (result?.error) {
-        let errorMessage = "Something went wrong. Try again.";
-        if (result.error === "CredentialsSignin") {
-          errorMessage = "Your email or password is not correct.";
-        }
-
-        showToast({
-          title: "Login Failed",
-          description: errorMessage,
-          status: "error",
-        });
-
-        setIsLoading(false);
-        return;
+    if (result?.error) {
+      console.log("❌ Login error:", result.error);
+      let errorMessage = "Something went wrong. Try again.";
+      if (result.error === "CredentialsSignin") {
+        errorMessage = "Your email or password is not correct.";
       }
 
-      // ✅ Wait for session using next-auth's built-in getSession
-    // ✅ Retry getSession if session not available yet
-const maxRetries = 3;
-let session = null;
-
-for (let attempt = 0; attempt < maxRetries; attempt++) {
-  session = await getSession();
-  if (session?.user) break;
-  await new Promise(res => setTimeout(res, 500)); // backoff between retries
-}
-
-if (!session?.user) {
-  showToast({
-    title: "Session Error",
-    description: "Login succeeded, but we couldn't verify your session. Please try again.",
-    status: "error",
-  });
-  setIsLoading(false);
-  return;
-}
-
-
-      const { isAdmin, firstName } = session.user;
-
       showToast({
-        title: "🎉 Login Successful",
-        description: `Welcome back, ${firstName || "User"}!`,
-        status: "success",
-      });
-
-      showToast({
-        title: "Redirecting...",
-        description: isAdmin
-          ? "Sending you to the Admin Dashboard"
-          : "Sending you to your Dashboard",
-        status: "info",
-      });
-
-      await new Promise(res => setTimeout(res, 800));
-
-      // ✅ Role-based redirect
-router.push(isAdmin ? "/admin/dashboard" : "/dashboard");
-
-    } catch (error) {
-      console.error("❌ Unexpected error:", error);
-      showToast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        title: "Login Failed",
+        description: errorMessage,
         status: "error",
       });
-    } finally {
+
       setIsLoading(false);
+      return;
     }
+
+    // ✅ Retry logic to ensure session is ready
+    let session;
+    let retryCount = 0;
+    const maxRetries = 3;
+
+    while (retryCount < maxRetries) {
+      try {
+        const res = await fetch("/api/auth/session");
+        session = await res.json();
+        console.log(`✅ Session Try ${retryCount + 1}:`, session);
+
+        if (session?.user) break;
+
+        retryCount++;
+        if (retryCount < maxRetries) {
+          await new Promise(res => setTimeout(res, 1000));
+        }
+      } catch (err) {
+        console.error("❌ Session fetch failed:", err);
+        retryCount++;
+        if (retryCount < maxRetries) {
+          await new Promise(res => setTimeout(res, 1000));
+        }
+      }
+    }
+
+    if (!session?.user) {
+      console.log("⚠️ Session unavailable after retries");
+      showToast({
+        title: "Session Error",
+        description: "Login worked, but couldn't load your account. Try again.",
+        status: "error",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    // 🎉 Show success
+    showToast({
+      title: "🎉 Login Successful",
+      description: `Welcome back, ${session.user.firstName || "User"}!`,
+      status: "success",
+    });
+
+    // 🔁 Redirect based on role
+    const isAdmin = Boolean(session.user.isAdmin);
+    console.log("🔑 User Role:", isAdmin ? "Admin" : "User");
+
+    if (isAdmin) {
+      router.push("/admin");
+    } else {
+      router.push("/dashboard");
+    }
+
+    setIsLoading(false);
   };
 
   return (
@@ -139,7 +142,8 @@ router.push(isAdmin ? "/admin/dashboard" : "/dashboard");
 
           <button
             type="submit"
-            className={`w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            className={`w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md ${isLoading ? 'opacity-70 cursor-not-allowed' : ''
+              }`}
             disabled={isLoading}
           >
             {isLoading ? 'Signing in...' : 'Sign In'}
