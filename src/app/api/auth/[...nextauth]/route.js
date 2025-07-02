@@ -1,9 +1,10 @@
 import NextAuth from "next-auth";
-import { getAuthOptions } from "@/lib/authOptions"; // ✅ Match exact file name (case-sensitive)
+import { getAuthOptions } from "@/lib/authOptions";
 
-const handler = async (request, context) => {
+const handler = async (req) => {
   const authOptions = await getAuthOptions();
-  return NextAuth(authOptions)(request, context);
+  const nextAuthHandler = NextAuth(authOptions);
+  return nextAuthHandler(req);
 };
 
 export const GET = handler;
