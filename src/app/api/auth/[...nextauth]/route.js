@@ -1,17 +1,10 @@
-// /app/api/auth/[...nextauth]/route.js
-
 import NextAuth from "next-auth";
+import { getAuthOptions } from "@/lib/authOptions"; // ✅ Match exact file name (case-sensitive)
 
-export const GET = async (req) => {
-  try {
-    const { getAuthOptions } = await import("../../../../lib/authOptions");
-    const authOptions = await getAuthOptions();
-    const handler = NextAuth(authOptions);
-    return handler(req);
-  } catch (error) {
-    console.error("🔥 GET /api/auth error:", error);
-    return new Response("Internal Server Error", { status: 500 });
-  }
+const handler = async (request, context) => {
+  const authOptions = await getAuthOptions();
+  return NextAuth(authOptions)(request, context);
 };
 
-
+export const GET = handler;
+export const POST = handler;
