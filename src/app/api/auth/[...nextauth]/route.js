@@ -1,19 +1,11 @@
 import NextAuth from "next-auth";
 import { getAuthOptions } from "@/lib/authOptions";
 
-/**
- * Because getAuthOptions() is async, we
- * 1. build the NextAuth instance inside each handler
- * 2. immediately forward the request to the right sub-handler.
- */
-export async function GET(request) {
-  const opts      = await getAuthOptions();
-  const { handlers } = NextAuth(opts);
-  return handlers.GET(request);        // ✅ web-standard Request
-}
+// This MUST be a function returning handlers, NOT a function that runs them
+const handler = async (...args) => {
+  const authOptions = await getAuthOptions();
+  return NextAuth(authOptions)(...args);
+};
 
-export async function POST(request) {
-  const opts      = await getAuthOptions();
-  const { handlers } = NextAuth(opts);
-  return handlers.POST(request);       // ✅ web-standard Request
-}
+export const GET = handler;
+export const POST = handler;

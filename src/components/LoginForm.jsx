@@ -90,7 +90,7 @@ const LoginForm = () => {
     console.log("🔑 User Role:", isAdmin ? "Admin" : "User");
 
     if (isAdmin) {
-      router.push("/admin");
+      router.push("/admindashboard");
     } else {
       router.push("/dashboard");
     }
